@@ -1,0 +1,36 @@
+name: Deploy RuoYi-Vue3
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 🚀 检出代码
+      uses: actions/checkout@v4
+
+    - name: ⚡ 安装 Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        cache: 'npm'
+
+    - name: 📦 安装依赖 & 构建 RuoYi-Vue3
+      run: |
+        npm ci
+        npm run build:prod
+
+    - name: 🔐 配置 SSH 连接
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+        chmod 600 ~/.ssh/id_ed25519
+        ssh-keyscan -H ${{ secrets.DEPLOY_HOST }} >> ~/.ssh/known_hosts
+
+    - name: 📂 同步文件到服务器
+      run: |
+        rsync -avz --delete dist/ ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}
