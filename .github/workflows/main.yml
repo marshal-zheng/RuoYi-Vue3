@@ -33,4 +33,4 @@ jobs:
 
     - name: 📂 同步文件到服务器
       run: |
-        rsync -avz --delete dist/ deploy@110.41.33.162:/home/dev/ruoyi-vue3/
+        rsync -avz --delete dist/ deploy@110.41.33.162:/home/dev/ruoyi/
