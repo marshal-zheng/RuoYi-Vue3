@@ -22,7 +22,7 @@ jobs:
     - name: 📦 安装依赖 & 构建 RuoYi-Vue3
       run: |
         yarn install --frozen-lockfile
-        yarn build:prod
+        yarn build
 
     - name: 🔐 配置 SSH 连接
       run: |

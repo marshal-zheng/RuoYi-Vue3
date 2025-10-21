@@ -33,7 +33,7 @@ jobs:
         run: yarn install --frozen-lockfile
 
       - name: "🏗️ 构建项目（生产环境）"
-        run: yarn build:prod
+        run: yarn build
 
       - name: "📊 上传构建产物"
         if: matrix.node-version == '20.x'
