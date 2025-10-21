@@ -2,7 +2,8 @@ import { defineConfig, loadEnv } from 'vite'
 import path from 'path'
 import createVitePlugins from './vite/plugins'
 
-const baseUrl = 'https://vue.ruoyi.vip' // 后端接口
+// const baseUrl = 'http://localhost:8080' // 后端接口（本地开发，需要去掉rewrite）
+const baseUrl = 'https://vue.ruoyi.vip' // 后端接口（演示环境，保留/dev-api前缀）
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode, command }) => {
@@ -45,19 +46,16 @@ export default defineConfig(({ mode, command }) => {
       port: 80,
       host: true,
       open: true,
-      proxy: {
-        // https://cn.vitejs.dev/config/#server-proxy
-        '/dev-api': {
-          target: baseUrl,
-          changeOrigin: true,
-          rewrite: (p) => p.replace(/^\/dev-api/, '')
-        },
-         // springdoc proxy
-         '^/v3/api-docs/(.*)': {
-          target: baseUrl,
-          changeOrigin: true,
-        }
+    proxy: {
+      // https://cn.vitejs.dev/config/#server-proxy
+      '/dev-api': {
+        target: baseUrl,
+        changeOrigin: true,
+        // 将 /dev-api 重写为 /prod-api（演示环境使用）
+        // 请求 /dev-api/xxx 会转发为 https://vue.ruoyi.vip/prod-api/xxx
+        rewrite: (p) => p.replace(/^\/dev-api/, '/prod-api')
       }
+    }
     },
     css: {
       postcss: {

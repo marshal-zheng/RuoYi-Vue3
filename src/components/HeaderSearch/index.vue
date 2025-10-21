@@ -1,81 +1,62 @@
 <template>
   <div class="header-search">
-    <svg-icon class-name="search-icon" icon-class="search" @click.stop="click" />
-    <el-dialog
-      v-model="show"
-      width="600"
-      @close="close"
-      :show-close="false"
-      append-to-body
+    <el-autocomplete
+      ref="headerSearchSelectRef"
+      v-model="search"
+      :fetch-suggestions="querySearch"
+      placeholder="快捷搜索"
+      class="header-search-select"
+      @select="handleSelect"
+      :trigger-on-focus="true"
+      popper-class="header-search-popper"
     >
-      <el-input
-        v-model="search"
-        ref="headerSearchSelectRef"
-        size="large"
-        @input="querySearch"
-        prefix-icon="Search"
-        placeholder="菜单搜索，支持标题、URL模糊查询"
-        clearable
-        @keyup.enter="selectActiveResult"
-        @keydown.up.prevent="navigateResult('up')"
-        @keydown.down.prevent="navigateResult('down')"
-      >
-      </el-input>
-
-      <div class="result-wrap">
-        <el-scrollbar>
-          <div class="search-item" tabindex="1" v-for="(item, index) in options" :key="item.path" :style="activeStyle(index)" @mouseenter="activeIndex = index" @mouseleave="activeIndex = -1">
-            <div class="left">
-              <svg-icon class="menu-icon" :icon-class="item.icon" />
-            </div>
-            <div class="search-info" @click="change(item)">
-              <div class="menu-title">
-                {{ item.title.join(" / ") }}
-              </div>
-              <div class="menu-path">
-                {{ item.path }}
-              </div>
-            </div>
-            <svg-icon icon-class="enter" v-show="index === activeIndex"/>
+      <template #prefix>
+        <el-icon><Search /></el-icon>
+      </template>
+      <template #default="{ item }">
+        <div class="search-item-content">
+          <div class="left">
+            <svg-icon class="menu-icon" :icon-class="item.icon" />
           </div>
-        </el-scrollbar>
-      </div>
-    </el-dialog>
+          <div class="search-info">
+            <div class="menu-title">
+              {{ item.title.join(" / ") }}
+            </div>
+            <div class="menu-path">
+              {{ item.path }}
+            </div>
+          </div>
+        </div>
+      </template>
+    </el-autocomplete>
   </div>
 </template>
 
 <script setup>
+import { ref, computed, nextTick } from 'vue'
+import { useRouter } from 'vue-router'
 import Fuse from 'fuse.js'
+import { Search } from '@element-plus/icons-vue'
 import { getNormalPath } from '@/utils/ruoyi'
 import { isHttp } from '@/utils/validate'
 import useSettingsStore from '@/store/modules/settings'
 import usePermissionStore from '@/store/modules/permission'
 
 const search = ref('')
-const options = ref([])
 const searchPool = ref([])
-const activeIndex = ref(-1)
-const show = ref(false)
 const fuse = ref(undefined)
 const headerSearchSelectRef = ref(null)
 const router = useRouter()
-const theme = computed(() => useSettingsStore().theme)
 const routes = computed(() => usePermissionStore().defaultRoutes)
 
-function click() {
-  show.value = !show.value
-  if (show.value) {
-    headerSearchSelectRef.value && headerSearchSelectRef.value.focus()
-    options.value = searchPool.value
-  }
-}
-
-function close() {
-  headerSearchSelectRef.value && headerSearchSelectRef.value.blur()
-  search.value = ''
-  options.value = []
-  show.value = false
-  activeIndex.value = -1
+function handleSelect(item) {
+  change(item)
+  nextTick(() => {
+    // 让当前活动元素失去焦点
+    if (document.activeElement) {
+      document.activeElement.blur()
+    }
+  })
 }
 
 function change(val) {
@@ -94,10 +75,6 @@ function change(val) {
   }
 
   search.value = ''
-  options.value = []
-  nextTick(() => {
-    show.value = false
-  })
 }
 
 function initFuse(list) {
@@ -156,36 +133,17 @@ function generateRoutes(routes, basePath = '', prefixTitle = []) {
   return res
 }
 
-function querySearch(query) {
-  activeIndex.value = -1
-  if (query !== '') {
-    options.value = fuse.value.search(query).map((item) => item.item) ?? searchPool.value
+function querySearch(queryString, callback) {
+  let results = []
+  if (queryString && queryString.trim() !== '') {
+    results = fuse.value.search(queryString).map((item) => item.item)
   } else {
-    options.value = searchPool.value
+    results = searchPool.value.slice(0, 10) // 显示前10个结果
   }
+  callback(results)
 }
 
-function activeStyle(index) {
-  if (index !== activeIndex.value) return {}
-  return {
-    "background-color": theme.value,
-    "color": "#fff"
-  }
-}
 
-function navigateResult(direction) {
-  if (direction === "up") {
-    activeIndex.value = activeIndex.value <= 0 ? options.value.length - 1 : activeIndex.value - 1
-  } else if (direction === "down") {
-    activeIndex.value = activeIndex.value >= options.value.length - 1 ? 0 : activeIndex.value + 1
-  }
-}
-
-function selectActiveResult() {
-  if (options.value.length > 0 && activeIndex.value >= 0) {
-    change(options.value[activeIndex.value])
-  }
-}
 
 onMounted(() => {
   searchPool.value = generateRoutes(routes.value)
@@ -198,55 +156,93 @@ watch(searchPool, (list) => {
 
 <style lang='scss' scoped>
 .header-search {
-  .search-icon {
-    cursor: pointer;
-    font-size: 18px;
-    vertical-align: middle;
+  width: 300px;
+
+  :deep(.el-autocomplete) {
+    width: 100%;
   }
 }
 
-.result-wrap {	
-  height: 280px;
-  margin: 6px 0;
+.search-item-content {
+  display: flex;
+  align-items: center;
+  padding: 8px 0;
 
-  .search-item {
-    display: flex;
-    height: 48px;
-    align-items: center;
-    padding-right: 10px;
+  .left {
+    width: 40px;
+    text-align: center;
+    flex-shrink: 0;
 
-    .left {
-      width: 60px;
-      text-align: center;
-
-      .menu-icon {
-        width: 18px;
-        height: 18px;
-      }
-    }
-
-    .search-info {
-      padding-left: 5px;
-      margin-top: 10px;
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-start;
-      flex: 1;
-
-      .menu-title,
-      .menu-path {
-        height: 20px;
-      }
-      .menu-path {
-        color: #ccc;
-        font-size: 10px;
-      }
+    .menu-icon {
+      width: 16px;
+      height: 16px;
     }
   }
 
-  .search-item:hover {
-    cursor: pointer;
+  .search-info {
+    padding-left: 10px;
+    flex: 1;
+    min-width: 0;
+
+    .menu-title {
+      font-size: 14px;
+      color: #303133;
+      line-height: 20px;
+      margin-bottom: 2px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    
+    .menu-path {
+      color: #909399;
+      font-size: 12px;
+      line-height: 16px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+}
+</style>
+
+<style lang='scss'>
+.header-search-popper {
+  .el-autocomplete-suggestion__list {
+    .el-autocomplete-suggestion__item {
+      padding: 8px 12px !important;
+      line-height: normal !important;
+
+      &:hover {
+        background-color: #f5f7fa;
+      }
+    }
+  }
+}
+
+// 暗色主题适配
+.dark .header-search-popper {
+  .el-autocomplete-suggestion__list {
+    background: #2d2d2d;
+    border-color: #4c4d4f;
+
+    .el-autocomplete-suggestion__item {
+      &:hover {
+        background-color: #3a3a3a;
+      }
+
+      .search-item-content {
+        .search-info {
+          .menu-title {
+            color: #e5eaf3;
+          }
+          
+          .menu-path {
+            color: #a3a6ad;
+          }
+        }
+      }
+    }
   }
 }
 </style>
