@@ -30,13 +30,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: "npm"
+          cache: "yarn"
 
       - name: "📦 安装依赖"
-        run: npm ci
+        run: yarn install --frozen-lockfile
 
       - name: "🏗️ 构建项目（生产环境）"
-        run: npm run build:prod
+        run: yarn build:prod
 
       - name: "📊 上传构建产物"
         if: matrix.node-version == '20.x'
