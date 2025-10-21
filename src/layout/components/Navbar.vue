@@ -1,25 +1,17 @@
 <template>
-  <div class="navbar">
-    <hamburger id="hamburger-container" :is-active="appStore.sidebar.opened" class="hamburger-container" @toggleClick="toggleSideBar" />
-    <breadcrumb v-if="!settingsStore.topNav" id="breadcrumb-container" class="breadcrumb-container" />
-    <top-nav v-if="settingsStore.topNav" id="topmenu-container" class="topmenu-container" />
+  <div class="navbar flex justify-between">
+    <div class="fl">
+      <hamburger id="hamburger-container" :is-active="appStore.sidebar.opened" class="hamburger-container" @toggleClick="toggleSideBar" />
+      <breadcrumb v-if="!settingsStore.topNav" id="breadcrumb-container" class="breadcrumb-container" />
+      <top-nav v-if="settingsStore.topNav" id="topmenu-container" class="topmenu-container" />
+    </div>
 
-    <div class="right-menu">
-      <template v-if="appStore.device !== 'mobile'">
-        <header-search id="header-search" class="right-menu-item" />
-
-        <el-tooltip content="主题模式" effect="dark" placement="bottom">
-          <div class="right-menu-item hover-effect theme-switch-wrapper" @click="toggleTheme">
-            <svg-icon v-if="settingsStore.isDark" icon-class="sunny" />
-            <svg-icon v-if="!settingsStore.isDark" icon-class="moon" />
-          </div>
-        </el-tooltip>
-      </template>
-
-      <el-dropdown @command="handleCommand" class="avatar-container right-menu-item hover-effect" trigger="hover">
-        <div class="avatar-wrapper">
-          <img :src="userStore.avatar" class="user-avatar" />
+    <div class="rt items-center flex mr-4">
+      <el-dropdown @command="handleCommand" class="avatar-container flex ml-4 right-menu-item hover-effect" trigger="hover">
+        <div class="avatar-wrapper flex items-center gap-1">
+          <svg-icon icon-class="user" class="user-avatar-icon" size="20" />
           <span class="user-nickname"> {{ userStore.nickName }} </span>
+          <svg-icon icon-class="ArrowDown" class="ml-0" />
         </div>
         <template #dropdown>
           <el-dropdown-menu>
@@ -52,6 +44,7 @@ import RuoYiDoc from '@/components/RuoYi/Doc'
 import useAppStore from '@/store/modules/app'
 import useUserStore from '@/store/modules/user'
 import useSettingsStore from '@/store/modules/settings'
+
 
 const appStore = useAppStore()
 const userStore = useUserStore()
@@ -132,10 +125,10 @@ function toggleTheme() {
   }
 
   .right-menu {
-    float: right;
-    height: 100%;
-    line-height: 50px;
-    display: flex;
+    // float: right;
+    // height: 100%;
+    // line-height: 50px;
+    // display: flex;
 
     &:focus {
       outline: none;
@@ -177,24 +170,37 @@ function toggleTheme() {
       padding-right: 0px;
 
       .avatar-wrapper {
-        margin-top: 10px;
+        display: flex;
+        align-items: center;
+        margin-top: 0;
         right: 8px;
         position: relative;
+        
+        &:hover {
+          .user-avatar-icon,
+          .user-nickname {
+            color: var(--el-color-primary);
+          }
+        }
 
-        .user-avatar {
+        .user-avatar-icon {
           cursor: pointer;
-          width: 30px;
-          height: 30px;
+          width: 20px;
+          height: 20px;
           margin-right: 8px;
-          border-radius: 50%;
+          color: #5a5e66;
+          transition: color 0.3s;
+          
+          &:hover {
+            color: var(--el-color-primary);
+          }
         }
 
         .user-nickname{
-          position: relative;
-          left: 0px;
-          bottom: 10px;
           font-size: 14px;
           font-weight: bold;
+          color: #5a5e66;
+          transition: color 0.3s;
         }
 
         i {

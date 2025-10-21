@@ -1,6 +1,6 @@
 
 <template>
-   <div class="app-container">
+   <ContentWrap>
       <el-form :model="queryParams" ref="queryRef" v-show="showSearch" :inline="true">
          <el-form-item label="用户名称" prop="userName">
             <el-input
@@ -88,11 +88,12 @@
          @pagination="getList"
       />
       <select-user ref="selectRef" :roleId="queryParams.roleId" @ok="handleQuery" />
-   </div>
+   </ContentWrap>
 </template>
 
 <script setup name="AuthUser">
 import selectUser from "./selectUser"
+import ContentWrap from "@/components/ContentWrap/src/ContentWrap.vue"
 import { allocatedUserList, authUserCancel, authUserCancelAll } from "@/api/system/role"
 
 const route = useRoute()

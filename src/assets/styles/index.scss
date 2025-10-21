@@ -12,6 +12,13 @@ body {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   font-family: Helvetica Neue, Helvetica, PingFang SC, Hiragino Sans GB, Microsoft YaHei, Arial, sans-serif;
+  // background-color: #f7f8fa;
+  // background-color: var(--app-content-bg-color);
+}
+
+// 浅色模式下的背景图片
+body:not(.dark) {
+  background: url('@/assets/images/page-bg.png') no-repeat center center;
 }
 
 label {
@@ -58,25 +65,25 @@ div:focus {
   outline: none;
 }
 
-.fr {
-  float: right;
-}
+// .fr {
+//   float: right;
+// }
 
-.fl {
-  float: left;
-}
+// .fl {
+//   float: left;
+// }
 
-.pr-5 {
-  padding-right: 5px;
-}
+// .pr-5 {
+//   padding-right: 5px;
+// }
 
-.pl-5 {
-  padding-left: 5px;
-}
+// .pl-5 {
+//   padding-left: 5px;
+// }
 
-.block {
-  display: block;
-}
+// .block {
+//   display: block;
+// }
 
 .pointer {
   cursor: pointer;
@@ -123,6 +130,11 @@ aside {
 //main-container全局样式
 .app-container {
   padding: 20px;
+}
+
+.app-main {
+  padding: 20px;
+  box-shadow: inset 1px 1px 22px 0px rgba(196,207,234,0.76);
 }
 
 .components-container {

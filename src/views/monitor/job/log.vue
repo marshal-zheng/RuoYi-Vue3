@@ -1,5 +1,5 @@
 <template>
-   <div class="app-container">
+   <ContentWrap>
       <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" label-width="68px">
          <el-form-item label="任务名称" prop="jobName">
             <el-input
@@ -167,12 +167,13 @@
             </div>
          </template>
       </el-dialog>
-   </div>
+   </ContentWrap>
 </template>
 
 <script setup name="JobLog">
 import { getJob } from "@/api/monitor/job"
 import { listJobLog, delJobLog, cleanJobLog } from "@/api/monitor/jobLog"
+import ContentWrap from "@/components/ContentWrap/src/ContentWrap.vue"
 
 const { proxy } = getCurrentInstance()
 const { sys_common_status, sys_job_group } = proxy.useDict("sys_common_status", "sys_job_group")

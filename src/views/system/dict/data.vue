@@ -1,5 +1,5 @@
 <template>
-   <div class="app-container">
+   <ContentWrap>
       <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch">
          <el-form-item label="字典名称" prop="dictType">
             <el-select v-model="queryParams.dictType" style="width: 200px">
@@ -172,11 +172,12 @@
             </div>
          </template>
       </el-dialog>
-   </div>
+   </ContentWrap>
 </template>
 
 <script setup name="Data">
 import useDictStore from '@/store/modules/dict'
+import ContentWrap from "@/components/ContentWrap/src/ContentWrap.vue"
 import { optionselect as getDictOptionselect, getType } from "@/api/system/dict/type"
 import { listData, getData, delData, addData, updateData } from "@/api/system/dict/data"
 

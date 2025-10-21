@@ -1,5 +1,5 @@
 <template>
-   <div class="app-container">
+   <ContentWrap>
       <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch">
          <el-form-item label="公告标题" prop="noticeTitle">
             <el-input
@@ -155,11 +155,12 @@
             </div>
          </template>
       </el-dialog>
-   </div>
+   </ContentWrap>
 </template>
 
 <script setup name="Notice">
 import { listNotice, getNotice, delNotice, addNotice, updateNotice } from "@/api/system/notice"
+import ContentWrap from "@/components/ContentWrap/src/ContentWrap.vue"
 
 const { proxy } = getCurrentInstance()
 const { sys_notice_status, sys_notice_type } = proxy.useDict("sys_notice_status", "sys_notice_type")

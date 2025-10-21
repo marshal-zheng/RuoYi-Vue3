@@ -1,5 +1,5 @@
 <template>
-   <div class="app-container">
+   <ContentWrap>
       <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" label-width="68px">
          <el-form-item label="参数名称" prop="configName">
             <el-input
@@ -161,11 +161,12 @@
             </div>
          </template>
       </el-dialog>
-   </div>
+   </ContentWrap>
 </template>
 
 <script setup name="Config">
 import { listConfig, getConfig, delConfig, addConfig, updateConfig, refreshCache } from "@/api/system/config"
+import ContentWrap from "@/components/ContentWrap/src/ContentWrap.vue"
 
 const { proxy } = getCurrentInstance()
 const { sys_yes_no } = proxy.useDict("sys_yes_no")

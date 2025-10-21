@@ -1,5 +1,5 @@
 <template>
-   <div class="app-container">
+   <ContentWrap>
       <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch">
          <el-form-item label="部门名称" prop="deptName">
             <el-input
@@ -137,11 +137,12 @@
             </div>
          </template>
       </el-dialog>
-   </div>
+   </ContentWrap>
 </template>
 
 <script setup name="Dept">
 import { listDept, getDept, delDept, addDept, updateDept, listDeptExcludeChild } from "@/api/system/dept"
+import ContentWrap from "@/components/ContentWrap/src/ContentWrap.vue"
 
 const { proxy } = getCurrentInstance()
 const { sys_normal_disable } = proxy.useDict("sys_normal_disable")

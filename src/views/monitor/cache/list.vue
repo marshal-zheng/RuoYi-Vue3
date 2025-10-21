@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container">
+<ContentWrap>
     <el-row :gutter="10">
       <el-col :span="8">
         <el-card style="height: calc(100vh - 125px)">
@@ -151,11 +151,12 @@
         </el-card>
       </el-col>
     </el-row>
-  </div>
+  </ContentWrap>
 </template>
 
 <script setup name="CacheList">
 import { listCacheName, listCacheKey, getCacheValue, clearCacheName, clearCacheKey, clearCacheAll } from "@/api/monitor/cache"
+import ContentWrap from "@/components/ContentWrap/src/ContentWrap.vue"
 
 const { proxy } = getCurrentInstance()
 

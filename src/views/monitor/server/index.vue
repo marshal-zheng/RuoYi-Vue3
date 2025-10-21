@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container">
+   <ContentWrap>
     <el-row :gutter="10">
       <el-col :span="12" class="card-box">
         <el-card>
@@ -166,11 +166,12 @@
         </el-card>
       </el-col>
     </el-row>
-  </div>
+  </ContentWrap>
 </template>
 
 <script setup>
 import { getServer } from '@/api/monitor/server'
+import ContentWrap from "@/components/ContentWrap/src/ContentWrap.vue"
 
 const server = ref([])
 const { proxy } = getCurrentInstance()

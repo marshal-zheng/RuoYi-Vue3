@@ -116,7 +116,7 @@ const handleSaveAndContinue = () => {
   </ElCard>
 </template>
 
-<style lang="less" scoped>
+<style lang="scss" scoped>
 .v-content-wrap {
   &--with-footer {
     // 当有 footer 时，给内容区域增加底部间距，避免被 fixed footer 遮挡

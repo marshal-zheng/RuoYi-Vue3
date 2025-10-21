@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container">
+   <ContentWrap>
     <el-row :gutter="10">
       <el-col :span="24" class="card-box">
         <el-card>
@@ -61,11 +61,12 @@
         </el-card>
       </el-col>
     </el-row>
-  </div>
+  </ContentWrap>
 </template>
 
 <script setup name="Cache">
 import { getCache } from '@/api/monitor/cache'
+import ContentWrap from "@/components/ContentWrap/src/ContentWrap.vue"
 import * as echarts from 'echarts'
 
 const cache = ref([])

@@ -1,5 +1,5 @@
 <template>
-   <div class="app-container">
+   <ContentWrap>
       <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch">
          <el-form-item label="岗位编码" prop="postCode">
             <el-input
@@ -141,11 +141,12 @@
             </div>
          </template>
       </el-dialog>
-   </div>
+   </ContentWrap>
 </template>
 
 <script setup name="Post">
-import { listPost, addPost, delPost, getPost, updatePost } from "@/api/system/post"
+import { listPost, getPost, delPost, addPost, updatePost } from "@/api/system/post"
+import ContentWrap from "@/components/ContentWrap/src/ContentWrap.vue"
 
 const { proxy } = getCurrentInstance()
 const { sys_normal_disable } = proxy.useDict("sys_normal_disable")

@@ -1,5 +1,5 @@
 <template>
-   <div class="app-container">
+   <ContentWrap>
       <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch">
          <el-form-item label="菜单名称" prop="menuName">
             <el-input
@@ -285,11 +285,12 @@
             </div>
          </template>
       </el-dialog>
-   </div>
+   </ContentWrap>
 </template>
 
 <script setup name="Menu">
-import { addMenu, delMenu, getMenu, listMenu, updateMenu } from "@/api/system/menu"
+import { listMenu, getMenu, delMenu, addMenu, updateMenu } from "@/api/system/menu"
+import ContentWrap from "@/components/ContentWrap/src/ContentWrap.vue"
 import SvgIcon from "@/components/SvgIcon"
 import IconSelect from "@/components/IconSelect"
 

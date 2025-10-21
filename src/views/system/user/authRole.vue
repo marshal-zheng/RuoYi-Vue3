@@ -1,5 +1,5 @@
 <template>
-   <div class="app-container">
+   <ContentWrap>
       <h4 class="form-header h4">基本信息</h4>
       <el-form :model="form" label-width="80px">
          <el-row>
@@ -42,11 +42,12 @@
             <el-button @click="close()">返回</el-button>
          </div>
       </el-form>
-   </div>
+   </ContentWrap>
 </template>
 
 <script setup name="AuthRole">
 import { getAuthRole, updateAuthRole } from "@/api/system/user"
+import ContentWrap from "@/components/ContentWrap/src/ContentWrap.vue"
 
 const route = useRoute()
 const { proxy } = getCurrentInstance()

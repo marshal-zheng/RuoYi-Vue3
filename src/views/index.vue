@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container home">
+<ContentWrap class="home">
     <!-- Tailwind CSS 测试区域 -->
     <div class="mb-8 p-6 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg shadow-lg">
       <h1 class="text-3xl font-bold text-white mb-4">🎉 Tailwind CSS 配置成功！</h1>
@@ -104,10 +104,12 @@
         </div>
       </div>
     </div>
-  </div>
+  </ContentWrap>
 </template>
 
 <script setup name="Index">
+import ContentWrap from "@/components/ContentWrap/src/ContentWrap.vue"
+
 const version = ref('3.9.0')
 
 function goTarget(url) {

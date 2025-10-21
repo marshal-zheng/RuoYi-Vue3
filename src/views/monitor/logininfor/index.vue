@@ -1,5 +1,5 @@
 <template>
-   <div class="app-container">
+   <ContentWrap>
       <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" label-width="68px">
          <el-form-item label="登录地址" prop="ipaddr">
             <el-input
@@ -121,11 +121,12 @@
          v-model:limit="queryParams.pageSize"
          @pagination="getList"
       />
-   </div>
+   </ContentWrap>
 </template>
 
 <script setup name="Logininfor">
 import { list, delLogininfor, cleanLogininfor, unlockLogininfor } from "@/api/monitor/logininfor"
+import ContentWrap from "@/components/ContentWrap/src/ContentWrap.vue"
 
 const { proxy } = getCurrentInstance()
 const { sys_common_status } = proxy.useDict("sys_common_status")

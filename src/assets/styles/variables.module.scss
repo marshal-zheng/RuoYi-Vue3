@@ -11,7 +11,7 @@ $panGreen: #30B08F;
 // 默认主题变量
 $menuText: #bfcbd9;
 $menuActiveText: #409eff;
-$menuBg: #304156;
+$menuBg: #F0F5FD;
 $menuHover: #263445;
 
 // 浅色主题theme-light
@@ -72,8 +72,11 @@ $--color-info: #909399;
   --sidebar-text: #{$menuText};
   --menu-hover: #{$menuHover};
   
-  --navbar-bg: #ffffff;
+  --navbar-bg: #F4F7FE;
   --navbar-text: #303133;
+  
+  /* 应用内容背景色 */
+  --app-content-bg-color: #EBF1FD;
   
   /* splitpanes default-theme 变量 */
   --splitpanes-default-bg: #ffffff;

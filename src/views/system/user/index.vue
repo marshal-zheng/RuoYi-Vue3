@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container">
+   <ContentWrap>
     <el-row :gutter="20">
       <splitpanes :horizontal="appStore.device === 'mobile'" class="default-theme">
         <!--部门数据-->
@@ -210,11 +210,12 @@
         </div>
       </template>
     </el-dialog>
-  </div>
+  </ContentWrap>
 </template>
 
 <script setup name="User">
 import { getToken } from "@/utils/auth"
+import ContentWrap from "@/components/ContentWrap/src/ContentWrap.vue"
 import useAppStore from '@/store/modules/app'
 import { changeUserStatus, listUser, resetUserPwd, delUser, getUser, updateUser, addUser, deptTreeSelect } from "@/api/system/user"
 import { Splitpanes, Pane } from "splitpanes"

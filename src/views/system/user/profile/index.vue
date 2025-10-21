@@ -1,5 +1,5 @@
 <template>
-   <div class="app-container">
+<ContentWrap>
       <el-row :gutter="20">
          <el-col :span="6" :xs="24">
             <el-card class="box-card">
@@ -59,11 +59,12 @@
             </el-card>
          </el-col>
       </el-row>
-   </div>
+   </ContentWrap>
 </template>
 
 <script setup name="Profile">
 import userAvatar from "./userAvatar"
+import ContentWrap from "@/components/ContentWrap/src/ContentWrap.vue"
 import userInfo from "./userInfo"
 import resetPwd from "./resetPwd"
 import { getUserProfile } from "@/api/system/user"

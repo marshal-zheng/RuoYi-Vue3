@@ -4180,6 +4180,11 @@ vue-tsc@^3.1.1:
     "@volar/typescript" "2.4.23"
     "@vue/language-core" "3.1.1"
 
+vue-types@^6.0.0:
+  version "6.0.0"
+  resolved "https://registry.npmmirror.com/vue-types/-/vue-types-6.0.0.tgz#3a9be5624491d5936652f3d1f2469ae3f53c6a94"
+  integrity sha512-fBgCA4nrBrB8SCU/AN40tFq8HUxLGBvU2ds7a5+SEDse6dYc+TJyvy8mWiwwL8oWIC/aGS/8nTqmhwxApgU5eA==
+
 vue@3.5.16:
   version "3.5.16"
   resolved "https://registry.yarnpkg.com/vue/-/vue-3.5.16.tgz#f0cde88c2688354f00ff2d77eb295c26440f8c7a"

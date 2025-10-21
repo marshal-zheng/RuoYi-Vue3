@@ -44,6 +44,8 @@ import ImageUpload from "@/components/ImageUpload"
 import ImagePreview from "@/components/ImagePreview"
 // 字典标签组件
 import DictTag from '@/components/DictTag'
+// 基础按钮组件
+import BaseButton from '@/components/BaseButton/index.vue'
 
 const app = createApp(App)
 
@@ -66,6 +68,8 @@ app.component('ImageUpload', ImageUpload)
 app.component('ImagePreview', ImagePreview)
 app.component('RightToolbar', RightToolbar)
 app.component('Editor', Editor)
+app.component('BaseButton', BaseButton)
+app.component('Icon', SvgIcon)
 
 app.use(router)
 app.use(store)

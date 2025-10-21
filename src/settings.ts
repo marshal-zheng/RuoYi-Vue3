@@ -22,7 +22,7 @@ export default {
   /**
    * 是否显示 tagsView
    */
-  tagsView: true,
+  tagsView: false,
   
   /**
    * 显示页签图标
@@ -32,7 +32,7 @@ export default {
   /**
    * 是否固定头部
    */
-  fixedHeader: false,
+  fixedHeader: true,
 
   /**
    * 是否显示logo

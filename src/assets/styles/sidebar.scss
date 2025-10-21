@@ -24,8 +24,8 @@
     left: 0;
     z-index: 1001;
     overflow: hidden;
-    background: #f8fafc;
-    border-right: 1px solid #e2e8f0;
+    background: var(--sidebar-bg);
+    // box-shadow: inset -1px 1px 22px 0px rgba(196, 207, 234, 0.76);
 
     // reset element-ui css
     .horizontal-collapse-transition {
@@ -46,7 +46,7 @@
 
     &.has-logo {
       .el-scrollbar {
-        height: calc(100% - 60px);
+        height: calc(100% - 50px);
       }
     }
 

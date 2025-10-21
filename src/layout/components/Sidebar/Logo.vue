@@ -31,12 +31,12 @@ const sideTheme = computed(() => settingsStore.sideTheme)
 
 // 获取Logo背景色
 const getLogoBackground = computed(() => {
-  return '#f8fafc'
+  return 'var(--navbar-bg)'
 })
 
 // 获取Logo文字颜色
 const getLogoTextColor = computed(() => {
-  return '#1e293b'
+  return 'var(--navbar-text)'
 })
 </script>
 
@@ -53,12 +53,12 @@ const getLogoTextColor = computed(() => {
 .sidebar-logo-container {
   position: relative;
   width: 100%;
-  height: 60px;
-  line-height: 60px;
+  height: 50px;
+  line-height: 50px;
   background: v-bind(getLogoBackground);
   text-align: center;
   overflow: hidden;
-  border-bottom: 1px solid #e2e8f0;
+  box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
 
   & .sidebar-logo-link {
     height: 100%;
@@ -76,7 +76,7 @@ const getLogoTextColor = computed(() => {
       margin: 0;
       color: v-bind(getLogoTextColor);
       font-weight: 600;
-      line-height: 60px;
+      line-height: 50px;
       font-size: 16px;
       font-family: Avenir, Helvetica Neue, Arial, Helvetica, sans-serif;
       vertical-align: middle;

@@ -1,5 +1,5 @@
 <template>
-   <div class="app-container">
+   <ContentWrap>
       <el-form :model="queryParams" ref="queryRef" :inline="true">
          <el-form-item label="登录地址" prop="ipaddr">
             <el-input
@@ -54,11 +54,12 @@
       </el-table>
 
       <pagination v-show="total > 0" :total="total" v-model:page="pageNum" v-model:limit="pageSize" />
-   </div>
+   </ContentWrap>
 </template>
 
 <script setup name="Online">
 import { forceLogout, list as initData } from "@/api/monitor/online"
+import ContentWrap from "@/components/ContentWrap/src/ContentWrap.vue"
 
 const { proxy } = getCurrentInstance()
 

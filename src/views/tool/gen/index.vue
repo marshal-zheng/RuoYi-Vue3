@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container">
+   <ContentWrap>
     <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch">
       <el-form-item label="表名称" prop="tableName">
         <el-input
@@ -142,11 +142,12 @@
     </el-dialog>
     <import-table ref="importRef" @ok="handleQuery" />
     <create-table ref="createRef" @ok="handleQuery" />
-  </div>
+  </ContentWrap>
 </template>
 
 <script setup name="Gen">
 import { listTable, previewTable, delTable, genCode, synchDb } from "@/api/tool/gen"
+import ContentWrap from "@/components/ContentWrap/src/ContentWrap.vue"
 import router from "@/router"
 import importTable from "./importTable"
 import createTable from "./createTable"
