@@ -7,9 +7,6 @@ on:
       - edited
       - synchronize
       - reopened
-  push:
-    branches:
-      - master
   workflow_call:
 
 jobs:
