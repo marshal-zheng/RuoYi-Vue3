@@ -8,16 +8,17 @@ import { isRelogin } from '@/utils/request'
 import useUserStore from '@/store/modules/user'
 import useSettingsStore from '@/store/modules/settings'
 import usePermissionStore from '@/store/modules/permission'
+import type { RouteLocationNormalized, NavigationGuardNext } from 'vue-router'
 
 NProgress.configure({ showSpinner: false })
 
 const whiteList = ['/login', '/register']
 
-const isWhiteList = (path) => {
+const isWhiteList = (path: string): boolean => {
   return whiteList.some(pattern => isPathMatch(pattern, path))
 }
 
-router.beforeEach((to, from, next) => {
+router.beforeEach((to: RouteLocationNormalized, _from: RouteLocationNormalized, next: NavigationGuardNext) => {
   NProgress.start()
   if (getToken()) {
     to.meta.title && useSettingsStore().setTitle(to.meta.title)
@@ -33,16 +34,16 @@ router.beforeEach((to, from, next) => {
         // 判断当前用户是否已拉取完user_info信息
         useUserStore().getInfo().then(() => {
           isRelogin.show = false
-          usePermissionStore().generateRoutes().then(accessRoutes => {
+          usePermissionStore().generateRoutes().then((accessRoutes: any[]) => {
             // 根据roles权限生成可访问的路由表
-            accessRoutes.forEach(route => {
+            accessRoutes.forEach((route: any) => {
               if (!isHttp(route.path)) {
                 router.addRoute(route) // 动态添加可访问路由表
               }
             })
             next({ ...to, replace: true }) // hack方法 确保addRoutes已完成
           })
-        }).catch(err => {
+        }).catch((err: any) => {
           useUserStore().logOut().then(() => {
             ElMessage.error(err)
             next({ path: '/' })

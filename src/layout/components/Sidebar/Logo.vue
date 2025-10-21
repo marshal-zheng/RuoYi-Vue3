@@ -31,18 +31,12 @@ const sideTheme = computed(() => settingsStore.sideTheme)
 
 // 获取Logo背景色
 const getLogoBackground = computed(() => {
-  if (settingsStore.isDark) {
-    return 'var(--sidebar-bg)'
-  }
-  return sideTheme.value === 'theme-dark' ? variables.menuBg : variables.menuLightBg
+  return '#f8fafc'
 })
 
 // 获取Logo文字颜色
 const getLogoTextColor = computed(() => {
-  if (settingsStore.isDark) {
-    return 'var(--sidebar-text)'
-  }
-  return sideTheme.value === 'theme-dark' ? '#fff' : variables.menuLightText
+  return '#1e293b'
 })
 </script>
 
@@ -59,11 +53,12 @@ const getLogoTextColor = computed(() => {
 .sidebar-logo-container {
   position: relative;
   width: 100%;
-  height: 50px;
-  line-height: 50px;
+  height: 60px;
+  line-height: 60px;
   background: v-bind(getLogoBackground);
   text-align: center;
   overflow: hidden;
+  border-bottom: 1px solid #e2e8f0;
 
   & .sidebar-logo-link {
     height: 100%;
@@ -81,8 +76,8 @@ const getLogoTextColor = computed(() => {
       margin: 0;
       color: v-bind(getLogoTextColor);
       font-weight: 600;
-      line-height: 50px;
-      font-size: 14px;
+      line-height: 60px;
+      font-size: 16px;
       font-family: Avenir, Helvetica Neue, Arial, Helvetica, sans-serif;
       vertical-align: middle;
     }

@@ -14,7 +14,7 @@
   }
 
   .sidebar-container {
-    transition: width 0.28s;
+    transition: width 0.28s ease-in-out;
     width: vars.$base-sidebar-width !important;
     height: 100%;
     position: fixed;
@@ -24,8 +24,8 @@
     left: 0;
     z-index: 1001;
     overflow: hidden;
-    -webkit-box-shadow: 2px 0 6px rgba(0,21,41,.35);
-    box-shadow: 0px 0px 8px 0px rgba(0, 0, 0, 0.1);
+    background: #f8fafc;
+    border-right: 1px solid #e2e8f0;
 
     // reset element-ui css
     .horizontal-collapse-transition {
@@ -46,7 +46,7 @@
 
     &.has-logo {
       .el-scrollbar {
-        height: calc(100% - 50px);
+        height: calc(100% - 60px);
       }
     }
 
@@ -61,19 +61,98 @@
     }
 
     .svg-icon {
-      margin-right: 16px;
+      margin-right: 12px;
+      font-size: 18px;
+      color: #64748b;
+      transition: color 0.2s ease;
     }
 
     .el-menu {
       border: none;
       height: 100%;
       width: 100% !important;
+      background: transparent !important;
+      padding: 8px 0;
     }
 
     .el-menu-item, .menu-title {
       overflow: hidden !important;
       text-overflow: ellipsis !important;
       white-space: nowrap !important;
+      position: relative;
+      color: #64748b;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      
+      &.is-active {
+        background-color: #e0f2fe !important;
+        color: #0369a1 !important;
+        position: relative;
+        
+        &::before {
+          content: '';
+          position: absolute;
+          left: 0;
+          top: 0;
+          bottom: 0;
+          width: 3px;
+          background-color: #0369a1;
+        }
+        
+        .svg-icon {
+          color: #0369a1 !important;
+        }
+      }
+  
+    }
+    
+    // Element Plus 活跃状态样式 - 只对 el-menu-item 应用选中态
+    .el-menu-item.is-active {
+      background-color: #e0f2fe !important;
+      color: #0369a1 !important;
+      position: relative;
+      
+      &::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 3px;
+        background-color: #0369a1;
+      }
+      
+      .svg-icon {
+        color: #0369a1 !important;
+      }
+    }
+    
+    // 确保所有菜单项都有统一的样式
+    .el-menu-item,
+    .el-sub-menu__title {
+      height: 48px !important;
+      line-height: 48px !important;
+      background: transparent !important;
+      border: none !important;
+      
+      &:focus,
+      &:focus-visible {
+        background-color: #f1f5f9 !important;
+        outline: none !important;
+      }
+      
+      // 移除Element Plus默认的hover效果
+      &:hover {
+        background-color: transparent !important;
+      }
+    }
+    
+    // 子菜单项特殊处理
+    .el-sub-menu .el-menu-item {
+      &:hover:not(.is-active) {
+        background-color: #f1f5f9 !important;
+        color: #475569 !important;
+      }
     }
 
     .el-menu-item .el-menu-tooltip__trigger {
@@ -83,30 +162,103 @@
     // menu hover
     .sub-menu-title-noDropdown,
     .el-sub-menu__title {
+      color: #64748b;
+      font-weight: 500;
+      
       &:hover {
-        background-color: rgba(0, 0, 0, 0.06) !important;
+        background-color: #f1f5f9 !important;
+        color: #475569;
       }
+      
+      // 移除父菜单项的选中状态，避免子菜单选中时父菜单也显示选中
+      // &.is-active {
+      //   background-color: #e0f2fe !important;
+      //   color: #0369a1 !important;
+      //   position: relative;
+      //   
+      //   &::before {
+      //     content: '';
+      //     position: absolute;
+      //     left: 0;
+      //     top: 0;
+      //     bottom: 0;
+      //     width: 3px;
+      //     background-color: #0369a1;
+      //     border-radius: 0 8px 8px 0;
+      //   }
+      //   
+      //   .svg-icon {
+      //     color: #0369a1 !important;
+      //   }
+      // }
     }
 
-    & .theme-dark .is-active > .el-sub-menu__title {
-      color: vars.$base-menu-color-active !important;
-    }
+    // 移除子菜单标题的选中态样式，只保留菜单项的选中态
+    // & .theme-dark .is-active > .el-sub-menu__title {
+    //   color: vars.$base-menu-color-active !important;
+    // }
 
     & .nest-menu .el-sub-menu>.el-sub-menu__title,
     & .el-sub-menu .el-menu-item {
       min-width: vars.$base-sidebar-width !important;
+      color: #64748b;
+      font-weight: 500;
+      background: transparent !important;
 
-      &:hover {
-        background-color: rgba(0, 0, 0, 0.06) !important;
+      &:hover:not(.is-active) {
+        background-color: #f1f5f9 !important;
+        color: #475569;
+      }
+      
+      &.is-active {
+        background-color: #e0f2fe !important;
+        color: #0369a1 !important;
+        position: relative;
+        
+        &::before {
+          content: '';
+          position: absolute;
+          left: 0;
+          top: 0;
+          bottom: 0;
+          width: 3px;
+          background-color: #0369a1;
+        }
+        
+        .svg-icon {
+          color: #0369a1 !important;
+        }
       }
     }
 
     & .theme-dark .nest-menu .el-sub-menu>.el-sub-menu__title,
     & .theme-dark .el-sub-menu .el-menu-item {
-      background-color: vars.$base-sub-menu-background;
+      background-color: transparent !important;
+      color: #64748b;
 
-      &:hover {
-        background-color: vars.$base-sub-menu-hover !important;
+      &:hover:not(.is-active) {
+        background-color: #f1f5f9 !important;
+        color: #475569;
+      }
+      
+      &.is-active {
+        background-color: #e0f2fe !important;
+        color: #0369a1 !important;
+        position: relative;
+        
+        &::before {
+          content: '';
+          position: absolute;
+          left: 0;
+          top: 0;
+          bottom: 0;
+          width: 3px;
+          background-color: #0369a1;
+        }
+        
+        .svg-icon {
+          color: #0369a1 !important;
+        }
       }
     }
   }
@@ -232,7 +384,6 @@
 
     &::-webkit-scrollbar-thumb {
       background: #99a9bf;
-      border-radius: 20px;
     }
   }
 }

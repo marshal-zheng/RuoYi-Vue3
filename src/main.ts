@@ -8,8 +8,9 @@ import 'element-plus/theme-chalk/dark/css-vars.css'
 import locale from 'element-plus/es/locale/lang/zh-cn'
 
 import '@/assets/styles/index.scss' // global css
+import '@/assets/styles/tailwind.css' // tailwind css
 
-import App from './App'
+import App from './App.vue'
 import store from './store'
 import router from './router'
 import directive from './directive' // directive
@@ -78,7 +79,7 @@ directive(app)
 app.use(ElementPlus, {
   locale: locale,
   // 支持 large、default、small
-  size: Cookies.get('size') || 'default'
+  size: (Cookies.get('size') as 'large' | 'default' | 'small') || 'default'
 })
 
 app.mount('#app')
