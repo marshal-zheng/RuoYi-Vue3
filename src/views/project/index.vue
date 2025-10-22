@@ -363,19 +363,11 @@ function submitForm() {
           proxy.$modal.msgError("修改失败，接口暂不可用")
         }
       } else {
-        try {
-          addProject(form.value).then(response => {
-            proxy.$modal.msgSuccess("新增成功")
-            open.value = false
-            getList()
-          }).catch(error => {
-            console.warn('新增项目失败:', error)
-            proxy.$modal.msgError("新增失败，接口暂不可用")
-          })
-        } catch (error) {
-          console.warn('新增项目异常:', error)
-          proxy.$modal.msgError("新增失败，接口暂不可用")
-        }
+        addProject(form.value).then(response => {
+          proxy.$modal.msgSuccess("新增成功")
+          open.value = false
+          getList()
+        })
       }
     }
   })

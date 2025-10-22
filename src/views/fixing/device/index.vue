@@ -455,19 +455,11 @@ function submitForm() {
           proxy.$modal.msgError("修改失败，接口暂不可用")
         }
       } else {
-        try {
-          addDevice(form.value).then(response => {
-            proxy.$modal.msgSuccess("新增成功")
-            open.value = false
-            getList()
-          }).catch(error => {
-            console.warn('新增设备失败:', error)
-            proxy.$modal.msgError("新增失败，接口暂不可用")
-          })
-        } catch (error) {
-          console.warn('新增设备异常:', error)
-          proxy.$modal.msgError("新增失败，接口暂不可用")
-        }
+        addDevice(form.value).then(response => {
+          proxy.$modal.msgSuccess("新增成功")
+          open.value = false
+          getList()
+        })
       }
     }
   })

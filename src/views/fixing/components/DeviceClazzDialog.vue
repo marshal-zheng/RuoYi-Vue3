@@ -123,20 +123,11 @@ function submitForm() {
           proxy.$modal.msgError("修改失败，接口暂不可用")
         }
       } else {
-        // 新增
-        try {
-          addDeviceClazz(form.value).then(response => {
-            proxy.$modal.msgSuccess("新增成功")
-            dialogOpen.value = false
-            emit('success')
-          }).catch(error => {
-            console.warn('新增分类失败:', error)
-            proxy.$modal.msgError("新增失败，接口暂不可用")
-          })
-        } catch (error) {
-          console.warn('新增分类异常:', error)
-          proxy.$modal.msgError("新增失败，接口暂不可用")
-        }
+        addDeviceClazz(form.value).then(response => {
+          proxy.$modal.msgSuccess("新增成功")
+          dialogOpen.value = false
+          emit('success')
+        })
       }
     }
   })

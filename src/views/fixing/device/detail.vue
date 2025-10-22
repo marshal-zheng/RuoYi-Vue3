@@ -10,6 +10,7 @@
           </el-tag>
         </div>
         <div class="header-actions">
+          <el-button type="primary" icon="CircleCheck" @click="handleSave">保存</el-button>
           <el-button type="primary" icon="Plus" @click="handleAddPort">添加端口</el-button>
           <el-button @click="goBack">返回列表</el-button>
         </div>
@@ -63,10 +64,10 @@
         @submit="handlePortConfigSubmit"
       />
 
-      <!-- 编辑设备名称对话框 -->
+      <!-- 编辑设备信息对话框 -->
       <DeviceNameDialog
         v-model="deviceNameDialogVisible"
-        :value="deviceNameForm.deviceName"
+        :value="deviceNameForm"
         @submit="handleDeviceNameSubmit"
         @close="handleDeviceNameDialogClose"
       />
@@ -81,7 +82,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import ContentWrap from '@/components/ContentWrap/src/ContentWrap.vue'
 import { XFlow, XFlowGraph, XFlowGrid } from '@/components/business/ZxFlow'
 import { registerDagShapes, DAG_EDGE, DAG_CONNECTOR } from '@/components/business/Dag/shapes/registerDagShapes'
-import { getDevice } from '@/api/fixing/device'
+import { getDevice, addDevice, updateDevice } from '@/api/fixing/device'
 import PortEditDialog from '@/views/fixing/components/PortEditDialog.vue'
 import PortConfigDrawer from '@/views/fixing/components/PortConfigDrawer.vue'
 import DeviceNameDialog from '@/views/fixing/components/DeviceNameDialog.vue'
@@ -149,20 +150,131 @@ const portDrawerVisible = ref(false)
 const portDrawerTitle = ref('端口配置')
 const currentPortInfo = ref({})
 
-// 设备名称编辑对话框
+// 设备信息编辑对话框
 const deviceNameDialogVisible = ref(false)
 const deviceNameFormRef = ref(null)
 const deviceNameForm = reactive({
-  deviceName: ''
+  deviceName: '',
+  categoryName: ''
 })
 
 const deviceNameFormRules = {
-  deviceName: [{ required: true, message: '请输入设备名称', trigger: 'blur' }]
+  deviceName: [{ required: true, message: '请输入设备名称', trigger: 'blur' }],
+  categoryName: [{ required: true, message: '请选择设备分类', trigger: 'change' }]
 }
 
 // 前端临时存储的端口列表（不调用后端接口）
 const tempPorts = ref([])
 
+/**
+ * 获取端口的默认参数配置（根据总线类型）
+ * @param {String} interfaceType - 总线类型
+ * @returns {Object} 默认参数配置
+ */
+function getDefaultParams(interfaceType) {
+  const defaultParamsMap = {
+    'RS422': {
+      baudRate: 115200,
+      dataBits: 8,
+      stopBits: 1,
+      parity: 'None'
+    },
+    'RS485': {
+      baudRate: 115200,
+      dataBits: 8,
+      stopBits: 1,
+      parity: 'None'
+    },
+    'CAN': {
+      baudRate: 250000,
+      canMode: 'A'
+    },
+    'LAN': {
+      ipAddress: '192.168.1.100',
+      port: 8080,
+      protocol: 'TCP'
+    },
+    '1553B': {
+      busAddress: 0,
+      rtAddress: 0,
+      subAddress: 0
+    }
+  }
+  
+  return defaultParamsMap[interfaceType] || {}
+}
+
+/**
+ * 获取端口的默认报文配置
+ * @returns {Object} 默认报文配置
+ */
+function getDefaultMessageConfig() {
+  return {
+    messages: []
+  }
+}
+
+
+/** 保存设备和端口配置 */
+async function handleSave() {
+  try {
+    loading.value = true
+    
+    // 构建提交数据
+    const submitData = {
+      // 设备基本信息
+      deviceId: deviceInfo.value.deviceId || null,
+      deviceName: deviceInfo.value.deviceName || '未命名设备',
+      deviceType: deviceInfo.value.deviceType || '',
+      manufacturer: deviceInfo.value.manufacturer || '',
+      model: deviceInfo.value.model || '',
+      version: deviceInfo.value.version || '',
+      busType: deviceInfo.value.busType || '',
+      categoryName: deviceInfo.value.categoryName || '',
+      remark: deviceInfo.value.remark || '',
+      
+      // 端口配置列表（包含参数和报文配置）
+      interfaces: tempPorts.value.map(port => ({
+        interfaceId: port.interfaceId || null,
+        interfaceName: port.interfaceName,
+        interfaceType: port.interfaceType,
+        position: port.position,
+        description: port.description || '',
+        // 如果没有参数配置，使用该总线类型的默认配置
+        params: port.params || getDefaultParams(port.interfaceType),
+        // 如果没有报文配置，使用默认的空报文配置
+        messageConfig: port.messageConfig || getDefaultMessageConfig()
+      }))
+    }
+    
+    console.log('保存数据:', submitData)
+    
+    // 判断是新增还是编辑
+    if (submitData.deviceId) {
+      // 编辑设备
+      await updateDevice(submitData)
+      ElMessage.success('设备配置保存成功')
+    } else {
+      // 新增设备
+      const response = await addDevice(submitData)
+      ElMessage.success('设备创建成功')
+      
+      // 如果是新增，保存成功后跳转到编辑页面
+      if (response.data || response.deviceId) {
+        const newDeviceId = response.data?.deviceId || response.deviceId
+        deviceInfo.value.deviceId = newDeviceId
+        // 更新路由参数
+        router.replace(`/fixing/device/detail/${newDeviceId}`)
+      }
+    }
+    
+  } catch (error) {
+    console.error('保存失败:', error)
+    ElMessage.error(error.message || '保存失败，请稍后重试')
+  } finally {
+    loading.value = false
+  }
+}
 
 /** 返回列表 */
 function goBack() {
@@ -193,20 +305,26 @@ async function loadDeviceInfo() {
 
 /** 加载设备端口 */
 async function loadDevicePorts() {
-  // 前端模式：使用临时端口列表
-  devicePorts.value = tempPorts.value
-  
-  // 如果需要从后端加载，取消下面的注释
-  /*
-  const deviceId = route.params.id
-  try {
-    const response = await listDeviceBusInterface({ deviceId })
-    devicePorts.value = response.rows || response.data || []
-  } catch (error) {
-    console.error('加载端口列表失败:', error)
-    devicePorts.value = []
+  // 如果设备信息中包含 interfaces 字段，使用它
+  if (deviceInfo.value.interfaces && deviceInfo.value.interfaces.length > 0) {
+    // 从后端加载的完整数据（包含参数和报文配置）
+    tempPorts.value = deviceInfo.value.interfaces.map(intf => ({
+      id: intf.interfaceId,
+      interfaceId: intf.interfaceId,
+      deviceId: deviceInfo.value.deviceId,
+      interfaceName: intf.interfaceName,
+      interfaceType: intf.interfaceType,
+      position: intf.position || 'right',
+      description: intf.description || '',
+      // 如果后端返回的数据没有参数配置，使用该总线类型的默认配置
+      params: intf.params || getDefaultParams(intf.interfaceType),
+      // 如果后端返回的数据没有报文配置，使用默认的空报文配置
+      messageConfig: intf.messageConfig || getDefaultMessageConfig()
+    }))
   }
-  */
+  
+  // 使用临时端口列表作为显示数据
+  devicePorts.value = tempPorts.value
 }
 
 /** 更新图数据 */
@@ -435,7 +553,7 @@ function customMenuHandler(standardItems, type, target) {
     return [
       {
         id: 'edit-device-name',
-        label: '编辑设备名称',
+        label: '编辑设备信息',
         icon: 'Edit',
         action: () => handleEditDeviceName()
       },
@@ -698,11 +816,15 @@ async function handlePortSubmit(formData) {
       ElMessage.success('修改成功')
     }
   } else {
-    // 添加端口
+    // 添加端口 - 自动添加默认参数配置
     const newPort = {
       ...formData,
       id: `port_${Date.now()}`,
-      interfaceId: `port_${Date.now()}`
+      interfaceId: `port_${Date.now()}`,
+      // 为新端口设置默认参数配置
+      params: getDefaultParams(formData.interfaceType),
+      // 为新端口设置默认报文配置
+      messageConfig: getDefaultMessageConfig()
     }
     tempPorts.value.push(newPort)
     ElMessage.success('添加成功')
@@ -733,58 +855,45 @@ async function handlePortSubmit(formData) {
   */
 }
 
-/** 提交端口配置 - 用于参数配置 */
+/** 提交端口配置 - 用于参数和报文配置 */
 async function handlePortConfigSubmit(portData) {
   console.log('保存端口配置:', portData)
   
-  // 前端模式：更新临时列表中的端口参数
+  // 更新临时列表中的端口配置（包括参数和报文）
   const index = tempPorts.value.findIndex(p => (p.id || p.interfaceId) === (portData.interfaceId || portData.id))
   if (index > -1) {
+    // 合并新配置到现有端口数据
     tempPorts.value[index] = {
       ...tempPorts.value[index],
-      params: portData.params
+      params: portData.params || tempPorts.value[index].params, // 参数配置
+      messageConfig: portData.messageConfig || tempPorts.value[index].messageConfig // 报文配置
     }
-    console.log('端口参数已更新:', tempPorts.value[index])
+    console.log('端口配置已更新:', tempPorts.value[index])
   }
   
-  // 更新图数据（虽然参数不影响显示，但保持数据同步）
+  // 更新图数据（虽然参数和报文不影响显示，但保持数据同步）
   await loadDevicePorts()
   updateGraphData()
-  
-  // 如果需要调用后端接口，取消下面的注释
-  /*
-  try {
-    await updateDeviceBusInterfaceParams(portData)
-    console.log('端口参数已保存到后端')
-  } catch (error) {
-    console.error('保存端口参数失败:', error)
-    ElMessage.error('保存端口参数失败')
-  }
-  */
 }
 
-/** 编辑设备名称 */
+/** 编辑设备信息 */
 function handleEditDeviceName() {
   deviceNameForm.deviceName = deviceInfo.value.deviceName || '设备'
+  deviceNameForm.categoryName = deviceInfo.value.categoryName || ''
   deviceNameDialogVisible.value = true
 }
 
-/** 提交设备名称 */
-async function handleDeviceNameSubmit() {
-  if (!deviceNameFormRef.value) return
+/** 提交设备信息 */
+async function handleDeviceNameSubmit(formData) {
+  // 更新设备信息
+  deviceInfo.value.deviceName = formData.deviceName
+  deviceInfo.value.categoryName = formData.categoryName
+  deviceNameDialogVisible.value = false
   
-  await deviceNameFormRef.value.validate((valid) => {
-    if (!valid) return
-    
-    // 更新设备名称
-    deviceInfo.value.deviceName = deviceNameForm.deviceName
-    deviceNameDialogVisible.value = false
-    
-    // 更新图数据
-    updateGraphData()
-    
-    ElMessage.success('设备名称修改成功')
-  })
+  // 更新图数据
+  updateGraphData()
+  
+  ElMessage.success('设备信息修改成功')
 }
 
 /** 关闭设备名称对话框 */
