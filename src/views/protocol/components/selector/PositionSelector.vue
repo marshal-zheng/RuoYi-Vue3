@@ -57,10 +57,10 @@ const emit = defineEmits(['update:modelValue', 'change'])
 
 // 默认位置选项
 const defaultPositionOptions = [
-  { label: '顶部', value: 'top' },
-  { label: '右侧', value: 'right' },
-  { label: '底部', value: 'bottom' },
-  { label: '左侧', value: 'left' }
+  // { label: '顶部', value: 'top' },
+  { label: '左侧', value: 'left' },
+  { label: '右侧', value: 'right' }
+  // { label: '底部', value: 'bottom' },
 ]
 
 // 计算最终的选项列表

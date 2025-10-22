@@ -52,7 +52,6 @@
         :title="portDialogTitle"
         :value="portForm"
         @submit="handlePortSubmit"
-        @close="handlePortDialogClose"
       />
 
       <!-- 编辑设备名称对话框 -->
@@ -126,7 +125,6 @@ const selectedPortId = ref(null)
 // 端口对话框
 const portDialogVisible = ref(false)
 const portDialogTitle = ref('添加端口')
-const portFormRef = ref(null)
 const portForm = reactive({
   interfaceId: null,
   deviceId: null,
@@ -135,12 +133,6 @@ const portForm = reactive({
   position: 'right',
   description: ''
 })
-
-const portFormRules = {
-  interfaceName: [{ required: true, message: '请输入端口名称', trigger: 'blur' }],
-  interfaceType: [{ required: true, message: '请选择总线类型', trigger: 'change' }],
-  position: [{ required: true, message: '请选择端口位置', trigger: 'change' }]
-}
 
 // 设备名称编辑对话框
 const deviceNameDialogVisible = ref(false)
@@ -652,60 +644,50 @@ async function handleDeletePort(interfaceId) {
 }
 
 /** 提交端口表单 */
-async function handlePortSubmit() {
-  if (!portFormRef.value) return
+async function handlePortSubmit(formData) {
+  console.log('formData', formData)
+  // 前端模式：直接操作临时列表
+  if (formData.interfaceId) {
+    // 编辑端口
+    const index = tempPorts.value.findIndex(p => (p.id || p.interfaceId) === formData.interfaceId)
+    if (index > -1) {
+      tempPorts.value[index] = { ...formData }
+      ElMessage.success('修改成功')
+    }
+  } else {
+    // 添加端口
+    const newPort = {
+      ...formData,
+      id: `port_${Date.now()}`,
+      interfaceId: `port_${Date.now()}`
+    }
+    tempPorts.value.push(newPort)
+    ElMessage.success('添加成功')
+  }
   
-  await portFormRef.value.validate(async (valid) => {
-    if (!valid) return
-    
-    // 前端模式：直接操作临时列表
-    if (portForm.interfaceId) {
-      // 编辑端口
-      const index = tempPorts.value.findIndex(p => (p.id || p.interfaceId) === portForm.interfaceId)
-      if (index > -1) {
-        tempPorts.value[index] = { ...portForm }
-        ElMessage.success('修改成功')
-      }
+  portDialogVisible.value = false
+  await loadDevicePorts()
+  updateGraphData()
+  
+  // 如果需要调用后端接口，取消下面的注释
+  /*
+  try {
+    if (formData.interfaceId) {
+      await updateDeviceBusInterface(formData)
+      ElMessage.success('修改成功')
     } else {
-      // 添加端口
-      const newPort = {
-        ...portForm,
-        id: `port_${Date.now()}`,
-        interfaceId: `port_${Date.now()}`
-      }
-      tempPorts.value.push(newPort)
+      await addDeviceBusInterface(formData)
       ElMessage.success('添加成功')
     }
     
     portDialogVisible.value = false
     await loadDevicePorts()
     updateGraphData()
-    
-    // 如果需要调用后端接口，取消下面的注释
-    /*
-    try {
-      if (portForm.interfaceId) {
-        await updateDeviceBusInterface(portForm)
-        ElMessage.success('修改成功')
-      } else {
-        await addDeviceBusInterface(portForm)
-        ElMessage.success('添加成功')
-      }
-      
-      portDialogVisible.value = false
-      await loadDevicePorts()
-      updateGraphData()
-    } catch (error) {
-      console.error('保存端口失败:', error)
-      ElMessage.error('保存端口失败')
-    }
-    */
-  })
-}
-
-/** 关闭端口对话框 */
-function handlePortDialogClose() {
-  portFormRef.value?.resetFields()
+  } catch (error) {
+    console.error('保存端口失败:', error)
+    ElMessage.error('保存端口失败')
+  }
+  */
 }
 
 /** 编辑设备名称 */
