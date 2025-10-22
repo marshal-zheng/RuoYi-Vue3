@@ -5,6 +5,9 @@ import { useDynamicTitle } from '@/utils/dynamicTitle'
 const isDark = useDark()
 const toggleDark = useToggle(isDark)
 
+// 强制设置为浅色模式
+isDark.value = false
+
 const { sideTheme, showSettings, topNav, tagsView, tagsIcon, fixedHeader, sidebarLogo, dynamicTitle, footerVisible, footerContent } = defaultSettings
 
 const storageSetting = JSON.parse(localStorage.getItem('layout-setting')) || ''
