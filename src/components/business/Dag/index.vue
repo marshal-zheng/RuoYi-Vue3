@@ -47,12 +47,12 @@
                   导出 Xmind
                 </el-button>
               </el-button-group>
-              <el-divider direction="vertical" />
+              <!-- <el-divider direction="vertical" /> -->
 
               <!-- 矩阵视图按钮 -->
-              <el-button size="small" type="primary" @click="showMatrixDialog" :disabled="readonly">
+              <!-- <el-button size="small" type="primary" @click="showMatrixDialog" :disabled="readonly">
                 矩阵视图
-              </el-button>
+              </el-button> -->
             </div>
             <div class="dag-toolbar__right">
               <slot name="right"></slot>
@@ -375,13 +375,30 @@ const connectionOptions = {
   connectionPoint: 'anchor',
   anchor: 'center',
   connector: DAG_CONNECTOR,
-  validateMagnet({ magnet }) {
+  validateMagnet({ magnet, cell }) {
     if (!magnet) return false
+    // 设备节点（device-port-node）：允许任意端口作为起点
+    if (cell?.shape === 'device-port-node') return true
+    // 普通 DAG 节点：仅允许 bottom/right 作为起点
     const group = magnet.getAttribute('port-group')
     return group === 'bottom' || group === 'right'
   },
   validateConnection({ sourceCell, targetCell, sourceMagnet, targetMagnet, sourceView }) {
     if (!sourceMagnet || !targetMagnet) return false
+    const isSourceDevice = sourceCell?.shape === 'device-port-node'
+    const isTargetDevice = targetCell?.shape === 'device-port-node'
+    // 设备节点参与的连接：放开方向限制
+    if (isSourceDevice || isTargetDevice) {
+      // 仍然做一次环路校验
+      const g = sourceView?.graph
+      if (!g) return true
+      const sourceId = sourceCell?.id
+      const targetId = targetCell?.id
+      if (!sourceId || !targetId) return false
+      if (willCreateCycle(g, sourceId, targetId)) return false
+      return true
+    }
+    // 普通 DAG 节点之间：保持原有方向限制
     const sourceGroup = sourceMagnet.getAttribute('port-group')
     const targetGroup = targetMagnet.getAttribute('port-group')
     const outputGroups = ['bottom', 'right']

@@ -1,10 +1,19 @@
 <template>
 <ContentWrap class="home">
   <XflowDAG
+    ref="dagRef"
     :operators="operators"
     :operators-loading="loading"
     :layout="layoutMode"
     :dnd-config="dndConfig"
+    @node-dblclick="handleNodeDblclick"
+  />
+  
+  <!-- 节点编辑抽屉 -->
+  <NodeEditDrawer
+    v-model="drawerVisible"
+    :node-data="currentNode"
+    @submit="handleNodeUpdate"
   />
   </ContentWrap>
 </template>
@@ -13,6 +22,7 @@
 import { ref, onMounted } from 'vue'
 import ContentWrap from "@/components/ContentWrap/src/ContentWrap.vue"
 import XflowDAG from "@/components/business/Dag/index.vue"
+import { NodeEditDrawer } from '../components'
 import { listDevice, listDeviceBusInterface } from '@/api/protocol/device'
 import { ElMessage } from 'element-plus'
 
@@ -22,6 +32,13 @@ const version = ref('3.9.0')
 const operators = ref([])
 const loading = ref(false)
 const layoutMode = ref('horizontal') // 'vertical' | 'horizontal'
+
+// DAG 组件引用
+const dagRef = ref(null)
+
+// 节点编辑抽屉
+const drawerVisible = ref(false)
+const currentNode = ref(null)
 
 // 可配置的文案和设置
 const dndConfig = {
@@ -275,8 +292,6 @@ async function loadDeviceList() {
       devices: devicesWithPorts
     })
     
-    ElMessage.success(`加载了 ${devicesWithPorts.length} 个设备 (Mock数据)`)
-    
   } catch (error) {
     console.error('加载设备列表失败:', error)
     ElMessage.error('加载设备列表失败，请稍后重试')
@@ -284,6 +299,72 @@ async function loadDeviceList() {
   } finally {
     loading.value = false
   }
+}
+
+/**
+ * 处理节点双击事件
+ * @param {Object} params - 包含 node, event, type
+ */
+function handleNodeDblclick({ node, event, type }) {
+  console.log('节点双击:', { node, event, type })
+  
+  // 保存当前节点数据
+  currentNode.value = node
+  
+  // 打开抽屉
+  drawerVisible.value = true
+}
+
+/**
+ * 处理节点更新
+ * @param {Object} params - 包含 nodeId, node, name
+ */
+function handleNodeUpdate({ nodeId, node, name }) {
+  console.log('更新节点:', { nodeId, node, name })
+  
+  // 获取图实例
+  const graph = dagRef.value?.getGraph()
+  if (!graph) {
+    console.error('图实例不存在')
+    ElMessage.error('更新失败：图实例不存在')
+    return
+  }
+  
+  // 通过节点ID获取节点实例
+  const cellNode = graph.getCellById(nodeId)
+  if (!cellNode) {
+    ElMessage.error('更新失败：节点不存在')
+    return
+  }
+  
+  // 获取当前节点数据
+  const currentData = cellNode.getData() || {}
+  
+  // 更新节点数据（包含 label 和 name 字段）
+  const updatedData = {
+    ...currentData,
+    name: name,
+    label: name
+  }
+  
+  // 如果存在 properties.content 结构，也更新里面的 label
+  if (currentData.properties?.content) {
+    updatedData.properties = {
+      ...currentData.properties,
+      content: {
+        ...currentData.properties.content,
+        label: name
+      }
+    }
+  }
+  
+  // 使用 setData 方法更新节点数据
+  // 节点组件会通过 watch 监听数据变化并自动重新渲染
+  cellNode.setData(updatedData, { overwrite: false })
+  
+  // 如果需要更新到后端，可以在这里调用 API
+  // await updateNodeName(nodeId, name)
+    
 }
 
 // 页面加载时获取设备列表
