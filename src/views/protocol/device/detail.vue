@@ -47,64 +47,21 @@
       </el-card>
 
       <!-- 端口编辑对话框 -->
-      <el-dialog
+      <PortEditDialog
         v-model="portDialogVisible"
         :title="portDialogTitle"
-        width="500px"
+        :value="portForm"
+        @submit="handlePortSubmit"
         @close="handlePortDialogClose"
-      >
-        <el-form ref="portFormRef" :model="portForm" :rules="portFormRules" label-width="100px">
-          <el-form-item label="总线类型" prop="interfaceType">
-            <InterfaceTypeSelector
-              v-model="portForm.interfaceType"
-              @change="handleBusTypeChange"
-            />
-          </el-form-item>
-          <el-form-item label="端口名称" prop="interfaceName">
-            <el-input v-model="portForm.interfaceName" placeholder="请输入端口名称" />
-          </el-form-item>
-          <el-form-item label="端口位置" prop="position">
-            <PositionSelector
-              v-model="portForm.position"
-              @change="handlePositionChange"
-            />
-          </el-form-item>
-          <el-form-item label="端口描述" prop="description">
-            <el-input
-              v-model="portForm.description"
-              type="textarea"
-              :rows="3"
-              placeholder="请输入端口描述"
-            />
-          </el-form-item>
-        </el-form>
-        <template #footer>
-          <div class="dialog-footer">
-            <el-button @click="portDialogVisible = false">取消</el-button>
-            <el-button type="primary" @click="handlePortSubmit">确定</el-button>
-          </div>
-        </template>
-      </el-dialog>
+      />
 
       <!-- 编辑设备名称对话框 -->
-      <el-dialog
+      <DeviceNameDialog
         v-model="deviceNameDialogVisible"
-        title="编辑设备名称"
-        width="400px"
+        :value="deviceNameForm.deviceName"
+        @submit="handleDeviceNameSubmit"
         @close="handleDeviceNameDialogClose"
-      >
-        <el-form ref="deviceNameFormRef" :model="deviceNameForm" :rules="deviceNameFormRules" label-width="100px">
-          <el-form-item label="设备名称" prop="deviceName">
-            <el-input v-model="deviceNameForm.deviceName" placeholder="请输入设备名称" />
-          </el-form-item>
-        </el-form>
-        <template #footer>
-          <div class="dialog-footer">
-            <el-button @click="deviceNameDialogVisible = false">取消</el-button>
-            <el-button type="primary" @click="handleDeviceNameSubmit">确定</el-button>
-          </div>
-        </template>
-      </el-dialog>
+      />
     </div>
   </ContentWrap>
 </template>
@@ -117,7 +74,8 @@ import ContentWrap from '@/components/ContentWrap/src/ContentWrap.vue'
 import { XFlow, XFlowGraph, XFlowGrid } from '@/components/business/ZxFlow'
 import { registerDagShapes, DAG_EDGE, DAG_CONNECTOR } from '@/components/business/Dag/shapes/registerDagShapes'
 import { getDevice } from '@/api/protocol/device'
-import { InterfaceTypeSelector, PositionSelector } from '@/views/protocol/components/selector'
+import PortEditDialog from '@/views/protocol/components/PortEditDialog.vue'
+import DeviceNameDialog from '@/views/protocol/components/DeviceNameDialog.vue'
 
 // 注册自定义形状
 registerDagShapes()
