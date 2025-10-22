@@ -24,7 +24,7 @@
             show-icon
           >
             <template #title>
-              <span>💡 提示：右键设备可添加端口 | 点击端口高亮选中 | 右键端口可编辑</span>
+              <span>💡 提示：双击端口编辑 | 右键设备可添加端口 | 右键端口可编辑/删除</span>
             </template>
           </el-alert>
         </div>
@@ -38,6 +38,7 @@
               :custom-menu-handler="customMenuHandler"
               @ready="onGraphReady"
               @node:click="onNodeClick"
+              @node-dblclick="onNodeDblClick"
             >
               <!-- 网格 -->
               <XFlowGrid :size="14" type="mesh" :dot-size="2" color="#e6e6e6" />
@@ -46,12 +47,20 @@
         </div>
       </el-card>
 
-      <!-- 端口编辑对话框 -->
+      <!-- 添加端口对话框 -->
       <PortEditDialog
         v-model="portDialogVisible"
         :title="portDialogTitle"
         :value="portForm"
         @submit="handlePortSubmit"
+      />
+
+      <!-- 端口配置抽屉（双击端口时打开） -->
+      <PortConfigDrawer
+        v-model="portDrawerVisible"
+        :title="portDrawerTitle"
+        :port-info="currentPortInfo"
+        @submit="handlePortConfigSubmit"
       />
 
       <!-- 编辑设备名称对话框 -->
@@ -74,23 +83,24 @@ import { XFlow, XFlowGraph, XFlowGrid } from '@/components/business/ZxFlow'
 import { registerDagShapes, DAG_EDGE, DAG_CONNECTOR } from '@/components/business/Dag/shapes/registerDagShapes'
 import { getDevice } from '@/api/protocol/device'
 import PortEditDialog from '@/views/protocol/components/PortEditDialog.vue'
+import PortConfigDrawer from '@/views/protocol/components/PortConfigDrawer.vue'
 import DeviceNameDialog from '@/views/protocol/components/DeviceNameDialog.vue'
 
 // 注册自定义形状
 registerDagShapes()
 
-// 连线配置
+// 连线配置 - 禁用连线功能
 const connectionOptions = {
-  snap: true,
+  snap: false,
   allowBlank: false,
   allowLoop: false,
-  highlight: true,
-  connectionPoint: 'anchor',
-  anchor: 'center',
-  connector: DAG_CONNECTOR,
-  validateConnection({ sourceMagnet, targetMagnet }) {
-    // 允许所有端口之间的连接
-    return !!(sourceMagnet && targetMagnet)
+  allowNode: false,
+  allowEdge: false,
+  allowPort: false,
+  highlight: false,
+  validateConnection() {
+    // 禁止所有连接
+    return false
   }
 }
 
@@ -122,7 +132,7 @@ const graphRef = ref(null)
 const graphInstance = ref(null)
 const selectedPortId = ref(null)
 
-// 端口对话框
+// 添加端口对话框
 const portDialogVisible = ref(false)
 const portDialogTitle = ref('添加端口')
 const portForm = reactive({
@@ -133,6 +143,11 @@ const portForm = reactive({
   position: 'right',
   description: ''
 })
+
+// 端口配置抽屉（双击端口时打开）
+const portDrawerVisible = ref(false)
+const portDrawerTitle = ref('端口配置')
+const currentPortInfo = ref({})
 
 // 设备名称编辑对话框
 const deviceNameDialogVisible = ref(false)
@@ -208,7 +223,7 @@ function updateGraphData() {
     description: port.description
   }))
 
-  // 定义端口组配置（与 DagDnd.vue 保持一致）
+  // 定义端口组配置（禁用连线功能）
   const portGroups = {
     top: {
       position: { name: 'absolute' },
@@ -222,10 +237,10 @@ function updateGraphData() {
           height: 12,
           x: -8,
           y: -6,
-          magnet: true,
+          magnet: false,
           fill: '#fff',
           strokeWidth: 1,
-          cursor: 'crosshair',
+          cursor: 'pointer',
           rx: 0,
           ry: 0
         },
@@ -255,10 +270,10 @@ function updateGraphData() {
           height: 12,
           x: -8,
           y: -6,
-          magnet: true,
+          magnet: false,
           fill: '#fff',
           strokeWidth: 1,
-          cursor: 'crosshair',
+          cursor: 'pointer',
           rx: 0,
           ry: 0
         },
@@ -288,10 +303,10 @@ function updateGraphData() {
           height: 12,
           x: -16,
           y: -6,
-          magnet: true,
+          magnet: false,
           fill: '#fff',
           strokeWidth: 1,
-          cursor: 'crosshair',
+          cursor: 'pointer',
           rx: 0,
           ry: 0
         },
@@ -321,10 +336,10 @@ function updateGraphData() {
           height: 12,
           x: -16,
           y: -6,
-          magnet: true,
+          magnet: false,
           fill: '#fff',
           strokeWidth: 1,
-          cursor: 'crosshair',
+          cursor: 'pointer',
           rx: 0,
           ry: 0
         },
@@ -469,6 +484,40 @@ function onGraphReady(graph) {
   updateGraphData()
 }
 
+/** 节点双击处理 - 用于处理端口双击 */
+function onNodeDblClick({ node, event }) {
+  console.log('节点双击事件:', node, event)
+  
+  // X6 的事件对象本身可能就是原生事件，或者包含原生事件
+  // 尝试多种方式获取原生 DOM 事件目标
+  const e = event
+  const target = e?.target || e?.currentTarget || e?.srcElement
+  
+  console.log('事件对象:', e)
+  console.log('目标元素:', target)
+  
+  if (!target) return
+  
+  // 检查点击的元素是否是端口（portBody）
+  const portElement = target.closest('[port]')
+  if (portElement) {
+    const portId = portElement.getAttribute('port')
+    console.log('双击端口 ID:', portId)
+    
+    // 找到对应的端口数据
+    const portData = tempPorts.value.find(p => (p.id || p.interfaceId) === portId)
+    if (portData) {
+      console.log('找到端口数据:', portData)
+      handleEditPort(portData)
+    } else {
+      console.log('未找到端口数据，portId:', portId)
+      console.log('所有端口:', tempPorts.value)
+    }
+  } else {
+    console.log('未找到端口元素, target:', target, 'tagName:', target?.tagName)
+  }
+}
+
 /** 端口右键菜单处理 */
 function handlePortContextMenu({ port, node, e }) {
   e.preventDefault()
@@ -488,8 +537,8 @@ function handlePortContextMenu({ port, node, e }) {
       type: 'info'
     }
   ).then(() => {
-    // 编辑端口
-    handleEditPort(portData)
+    // 编辑端口 - 使用对话框
+    handleEditPortDialog(portData)
   }).catch((action) => {
     if (action === 'cancel') {
       // 删除端口
@@ -508,6 +557,18 @@ function handlePortContextMenu({ port, node, e }) {
       })
     }
   })
+}
+
+/** 编辑端口 - 使用对话框（右键菜单） */
+function handleEditPortDialog(port) {
+  portDialogTitle.value = '编辑端口'
+  portForm.interfaceId = port.interfaceId || port.id
+  portForm.deviceId = port.deviceId || route.params.id
+  portForm.interfaceName = port.interfaceName
+  portForm.interfaceType = port.interfaceType
+  portForm.position = port.position
+  portForm.description = port.description
+  portDialogVisible.value = true
 }
 
 /** 节点点击事件 */
@@ -606,16 +667,11 @@ function handleAddPort() {
   portDialogVisible.value = true
 }
 
-/** 编辑端口 */
+/** 编辑端口 - 双击端口时打开抽屉 */
 function handleEditPort(port) {
-  portDialogTitle.value = '编辑端口'
-  portForm.interfaceId = port.interfaceId || port.id
-  portForm.deviceId = port.deviceId || route.params.id
-  portForm.interfaceName = port.interfaceName
-  portForm.interfaceType = port.interfaceType
-  portForm.position = port.position
-  portForm.description = port.description
-  portDialogVisible.value = true
+  portDrawerTitle.value = `端口配置 - ${port.interfaceName}`
+  currentPortInfo.value = { ...port }
+  portDrawerVisible.value = true
 }
 
 /** 删除端口 */
@@ -643,7 +699,7 @@ async function handleDeletePort(interfaceId) {
   */
 }
 
-/** 提交端口表单 */
+/** 提交端口表单 - 用于添加端口 */
 async function handlePortSubmit(formData) {
   console.log('formData', formData)
   // 前端模式：直接操作临时列表
@@ -686,6 +742,36 @@ async function handlePortSubmit(formData) {
   } catch (error) {
     console.error('保存端口失败:', error)
     ElMessage.error('保存端口失败')
+  }
+  */
+}
+
+/** 提交端口配置 - 用于参数配置 */
+async function handlePortConfigSubmit(portData) {
+  console.log('保存端口配置:', portData)
+  
+  // 前端模式：更新临时列表中的端口参数
+  const index = tempPorts.value.findIndex(p => (p.id || p.interfaceId) === (portData.interfaceId || portData.id))
+  if (index > -1) {
+    tempPorts.value[index] = {
+      ...tempPorts.value[index],
+      params: portData.params
+    }
+    console.log('端口参数已更新:', tempPorts.value[index])
+  }
+  
+  // 更新图数据（虽然参数不影响显示，但保持数据同步）
+  await loadDevicePorts()
+  updateGraphData()
+  
+  // 如果需要调用后端接口，取消下面的注释
+  /*
+  try {
+    await updateDeviceBusInterfaceParams(portData)
+    console.log('端口参数已保存到后端')
+  } catch (error) {
+    console.error('保存端口参数失败:', error)
+    ElMessage.error('保存端口参数失败')
   }
   */
 }
