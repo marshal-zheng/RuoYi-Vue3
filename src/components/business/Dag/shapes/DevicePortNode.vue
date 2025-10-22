@@ -1,22 +1,60 @@
 <template>
   <div class="device-port-node relative overflow-visible" :style="{ width: containerWidth + 'px', height: containerHeight + 'px' }">
-    <!-- 设备主体 -->
+    <!-- 设备主体 - 金属芯片铭牌效果 -->
     <div 
-      class="device-body absolute bg-[#181818] rounded-md shadow-lg"
+      class="device-body absolute rounded-md shadow-2xl overflow-hidden"
       :style="{
         width: '70px',
         height: deviceRectHeight + 'px',
         left: deviceBodyLeft + 'px',
-        top: deviceBodyTop + 'px'
+        top: deviceBodyTop + 'px',
+        background: 'linear-gradient(135deg, #434343 0%, #282828 25%, #1a1a1a 50%, #282828 75%, #434343 100%)',
+        border: '1px solid rgba(100, 100, 100, 0.6)',
+        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 -1px 0 rgba(0, 0, 0, 0.5)'
       }"
     >
-      <!-- 设备名称 - 竖向文字 -->
+      <!-- 顶部高光条 -->
       <div 
-        class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-white text-sm font-semibold whitespace-nowrap"
-        style="writing-mode: vertical-rl; letter-spacing: 0.5em; text-orientation: upright;"
+        class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent"
+      ></div>
+      
+      <!-- 四角装饰螺丝孔 -->
+      <div 
+        v-for="corner in ['top-left', 'top-right', 'bottom-left', 'bottom-right']"
+        :key="corner"
+        :class="[
+          'absolute w-1.5 h-1.5 rounded-full bg-gradient-to-br from-zinc-600 to-zinc-800 shadow-inner',
+          corner === 'top-left' ? 'top-1.5 left-1.5' : '',
+          corner === 'top-right' ? 'top-1.5 right-1.5' : '',
+          corner === 'bottom-left' ? 'bottom-1.5 left-1.5' : '',
+          corner === 'bottom-right' ? 'bottom-1.5 right-1.5' : ''
+        ]"
+      >
+        <!-- 螺丝孔中心点 -->
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-0.5 h-0.5 bg-black/60 rounded-full"></div>
+      </div>
+      
+      <!-- 设备名称 - 竖向文字带金属质感 -->
+      <div 
+        class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-sm font-bold whitespace-nowrap"
+        style="
+          writing-mode: vertical-rl; 
+          letter-spacing: 0.5em; 
+          text-orientation: upright;
+          color: #e0e0e0;
+          text-shadow: 
+            0 1px 0 rgba(255, 255, 255, 0.3),
+            0 -1px 0 rgba(0, 0, 0, 0.8),
+            0 0 10px rgba(200, 200, 200, 0.2);
+        "
       >
         {{ label }}
       </div>
+      
+      <!-- 底部暗影条 -->
+      <div 
+        class="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-black/50 to-transparent"
+      ></div>
     </div>
     
     <!-- 注意：端口现在完全由 X6 的连接桩渲染，不再需要 HTML port-item -->
