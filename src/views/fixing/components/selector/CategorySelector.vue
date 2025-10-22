@@ -68,8 +68,8 @@ async function loadCategories() {
     
     // 转换为选项格式
     categoryOptions.value = categories.map(item => ({
-      label: item.categoryName || item.name || item.label,
-      value: item.categoryName || item.name || item.value
+      label: item.name || item.categoryName || item.label,
+      value: item.name || item.categoryName || item.value
     }))
   } catch (error) {
     console.error('加载设备分类失败:', error)

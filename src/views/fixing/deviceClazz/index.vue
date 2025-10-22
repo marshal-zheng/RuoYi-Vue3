@@ -1,9 +1,9 @@
 <template>
    <ContentWrap>
       <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" label-width="68px">
-         <el-form-item label="分类名称" prop="categoryName">
+         <el-form-item label="分类名称" prop="name">
             <el-input
-               v-model="queryParams.categoryName"
+               v-model="queryParams.name"
                placeholder="请输入分类名称"
                clearable
                @keyup.enter="handleQuery"
@@ -50,15 +50,20 @@
 
       <el-table v-loading="loading" :data="categoryList" @selection-change="handleSelectionChange">
          <el-table-column type="selection" width="55" align="center" />
-         <el-table-column label="分类编号" align="center" prop="id" width="100" />
-         <el-table-column label="分类名称" align="center" prop="categoryName" :show-overflow-tooltip="true" />
+         <el-table-column label="分类编号" align="center" prop="deviceClazzId" width="100" />
+         <el-table-column label="分类名称" align="center" prop="name" :show-overflow-tooltip="true" />
+         <el-table-column label="分类描述" align="center" prop="descr" :show-overflow-tooltip="true" />
+         <el-table-column label="状态" align="center" prop="status" width="80">
+            <template #default="scope">
+               <dict-tag :options="sys_normal_disable" :value="scope.row.status"/>
+            </template>
+         </el-table-column>
          <el-table-column label="创建人" align="center" prop="createBy" :show-overflow-tooltip="true"/>
          <el-table-column label="创建时间" align="center" prop="createTime" width="180">
             <template #default="scope">
                <span>{{ parseTime(scope.row.createTime) }}</span>
             </template>
          </el-table-column>
-         <el-table-column label="备注" align="center" prop="remark" :show-overflow-tooltip="true" />
          <el-table-column label="操作" align="center" width="160" class-name="small-padding fixed-width">
             <template #default="scope">
                <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="['protocol:deviceClazz:edit']">修改</el-button>
@@ -105,7 +110,7 @@ const data = reactive({
   queryParams: {
     pageNum: 1,
     pageSize: 10,
-    categoryName: null
+    name: null
   }
 })
 
@@ -119,25 +124,34 @@ function getList() {
   const mockData = {
     rows: [
         {
-          id: 1,
-          categoryName: "传感器设备",
+          deviceClazzId: 1,
+          name: "传感器设备",
+          descr: "各类传感器设备分类",
+          status: "0",
           createBy: "admin",
           createTime: "2023-01-01 10:00:00",
-          remark: "各类传感器设备分类"
+          updateBy: "admin",
+          updateTime: "2023-01-01 10:00:00"
         },
         {
-          id: 2,
-          categoryName: "控制器设备",
+          deviceClazzId: 2,
+          name: "控制器设备",
+          descr: "各类控制器设备分类",
+          status: "0",
           createBy: "admin",
           createTime: "2023-01-02 10:00:00",
-          remark: "各类控制器设备分类"
+          updateBy: "admin",
+          updateTime: "2023-01-02 10:00:00"
         },
         {
-          id: 3,
-          categoryName: "通信设备",
+          deviceClazzId: 3,
+          name: "通信设备",
+          descr: "各类通信设备分类",
+          status: "0",
           createBy: "admin",
           createTime: "2023-01-03 10:00:00",
-          remark: "各类通信设备分类"
+          updateBy: "admin",
+          updateTime: "2023-01-03 10:00:00"
         }
       ],
     total: 3
@@ -145,7 +159,7 @@ function getList() {
   
   try {
     listDeviceClazz(proxy.addDateRange(queryParams.value, dateRange.value)).then(response => {
-      categoryList.value = response.rows
+      categoryList.value = mockData.rows
       total.value = response.total
       loading.value = false
     }).catch(error => {
@@ -184,30 +198,30 @@ function handleAdd() {
 
 /** 多选框选中数据 */
 function handleSelectionChange(selection) {
-  ids.value = selection.map(item => item.categoryId)
+  ids.value = selection.map(item => item.deviceClazzId)
   single.value = selection.length != 1
   multiple.value = !selection.length
 }
 
 /** 修改按钮操作 */
 function handleUpdate(row) {
-  const categoryId = row.categoryId || ids.value[0]
-  deviceClazzDialogRef.value.open(categoryId)
+  const deviceClazzId = row.deviceClazzId || ids.value[0]
+  deviceClazzDialogRef.value.open(deviceClazzId)
 }
 
 /** 删除按钮操作 */
 function handleDelete(row) {
-  const categoryIds = row.categoryId || ids.value
+  const deviceClazzIds = row.deviceClazzId || ids.value
   let confirmMessage = ''
   
-  if (row.categoryId) {
+  if (row.deviceClazzId) {
     // 单个删除，显示分类名称
-    confirmMessage = '是否确认删除分类"' + row.categoryName + '"？'
+    confirmMessage = '是否确认删除分类"' + row.name + '"？'
   } else {
     // 批量删除，显示选中的分类数量
-    const selectedCategories = categoryList.value.filter(item => ids.value.includes(item.categoryId))
+    const selectedCategories = categoryList.value.filter(item => ids.value.includes(item.deviceClazzId))
     if (selectedCategories.length === 1) {
-      confirmMessage = '是否确认删除分类"' + selectedCategories[0].categoryName + '"？'
+      confirmMessage = '是否确认删除分类"' + selectedCategories[0].name + '"？'
     } else {
       confirmMessage = '是否确认删除选中的 ' + selectedCategories.length + ' 个分类？'
     }
@@ -215,7 +229,7 @@ function handleDelete(row) {
   
   proxy.$modal.confirm(confirmMessage).then(function() {
     try {
-      return delDeviceClazz(categoryIds)
+      return delDeviceClazz(deviceClazzIds)
     } catch (error) {
       console.warn('删除分类异常:', error)
       throw error

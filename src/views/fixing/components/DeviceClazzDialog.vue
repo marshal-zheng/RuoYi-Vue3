@@ -1,11 +1,17 @@
 <template>
   <el-dialog :title="title" v-model="dialogOpen" width="600px" append-to-body>
     <el-form ref="deviceClazzRef" :model="form" :rules="rules" label-width="100px">
-      <el-form-item label="分类名称" prop="categoryName">
-        <el-input v-model="form.categoryName" placeholder="请输入分类名称" />
+      <el-form-item label="分类名称" prop="name">
+        <el-input v-model="form.name" placeholder="请输入分类名称" />
       </el-form-item>
-      <el-form-item label="备注" prop="remark">
-        <el-input v-model="form.remark" type="textarea" placeholder="请输入备注" :rows="3"></el-input>
+      <el-form-item label="分类描述" prop="descr">
+        <el-input v-model="form.descr" type="textarea" placeholder="请输入分类描述" :rows="3"></el-input>
+      </el-form-item>
+      <el-form-item label="状态" prop="status">
+        <el-radio-group v-model="form.status">
+          <el-radio label="0">正常</el-radio>
+          <el-radio label="1">停用</el-radio>
+        </el-radio-group>
       </el-form-item>
     </el-form>
     <template #footer>
@@ -31,9 +37,15 @@ const title = ref("")
 const data = reactive({
   form: {},
   rules: {
-    categoryName: [
+    name: [
       { required: true, message: "分类名称不能为空", trigger: "blur" },
       { min: 2, max: 50, message: "分类名称长度必须介于 2 和 50 之间", trigger: "blur" }
+    ],
+    descr: [
+      { max: 255, message: "分类描述长度不能超过 255 个字符", trigger: "blur" }
+    ],
+    status: [
+      { required: true, message: "请选择状态", trigger: "change" }
     ]
   }
 })
@@ -41,12 +53,12 @@ const data = reactive({
 const { form, rules } = toRefs(data)
 
 /** 打开弹框 */
-function openDialog(categoryId) {
+function openDialog(deviceClazzId) {
   reset()
-  if (categoryId) {
+  if (deviceClazzId) {
     // 编辑模式
     title.value = "修改设备分类"
-    getDeviceClazzInfo(categoryId)
+    getDeviceClazzInfo(deviceClazzId)
   } else {
     // 新增模式
     title.value = "添加设备分类"
@@ -55,20 +67,18 @@ function openDialog(categoryId) {
 }
 
 /** 获取设备分类详情 */
-function getDeviceClazzInfo(categoryId) {
+function getDeviceClazzInfo(deviceClazzId) {
   try {
-    getDeviceClazz(categoryId).then(response => {
+    getDeviceClazz(deviceClazzId).then(response => {
       form.value = response.data
     }).catch(error => {
       console.warn('获取分类详情失败:', error)
       // 使用模拟数据
       const mockData = {
-        categoryId: categoryId,
-        categoryName: "示例分类",
-        categoryCode: "EXAMPLE",
-        sort: 1,
-        status: "0",
-        remark: "这是一个示例分类"
+        deviceClazzId: deviceClazzId,
+        name: "示例分类",
+        descr: "这是一个示例分类描述",
+        status: "0"
       }
       form.value = mockData
     })
@@ -76,12 +86,10 @@ function getDeviceClazzInfo(categoryId) {
     console.warn('获取分类详情异常:', error)
     // 使用模拟数据
     const mockData = {
-      categoryId: categoryId,
-      categoryName: "示例分类",
-      categoryCode: "EXAMPLE",
-      sort: 1,
-      status: "0",
-      remark: "这是一个示例分类"
+      deviceClazzId: deviceClazzId,
+      name: "示例分类",
+      descr: "这是一个示例分类描述",
+      status: "0"
     }
     form.value = mockData
   }
@@ -90,9 +98,10 @@ function getDeviceClazzInfo(categoryId) {
 /** 表单重置 */
   function reset() {
     form.value = {
-      id: null,
-      categoryName: "",
-      remark: ""
+      deviceClazzId: null,
+      name: "",
+      descr: "",
+      status: "0"
     }
     proxy.resetForm("deviceClazzRef")
 }
@@ -107,7 +116,7 @@ function cancel() {
 function submitForm() {
   proxy.$refs["deviceClazzRef"].validate(valid => {
     if (valid) {
-      if (form.value.categoryId != undefined) {
+      if (form.value.deviceClazzId != undefined) {
         // 修改
         try {
           updateDeviceClazz(form.value).then(response => {
@@ -123,11 +132,19 @@ function submitForm() {
           proxy.$modal.msgError("修改失败，接口暂不可用")
         }
       } else {
-        addDeviceClazz(form.value).then(response => {
-          proxy.$modal.msgSuccess("新增成功")
-          dialogOpen.value = false
-          emit('success')
-        })
+        try {
+          addDeviceClazz(form.value).then(response => {
+            proxy.$modal.msgSuccess("新增成功")
+            dialogOpen.value = false
+            emit('success')
+          }).catch(error => {
+            console.warn('新增分类失败:', error)
+            proxy.$modal.msgError("新增失败，接口暂不可用")
+          })
+        } catch (error) {
+          console.warn('新增分类异常:', error)
+          proxy.$modal.msgError("新增失败，接口暂不可用")
+        }
       }
     }
   })

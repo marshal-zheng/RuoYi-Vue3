@@ -331,7 +331,7 @@ function getList() {
   
   try {
     listDevice(proxy.addDateRange(queryParams.value, dateRange.value)).then(response => {
-      deviceList.value = response.rows
+      deviceList.value = mockData.rows
       total.value = response.total
       loading.value = false
     }).catch(error => {

@@ -102,7 +102,6 @@ async function submitPort() {
     dataToSubmit.messageConfig = messageConfig
     
     emit('submit', dataToSubmit)
-    ElMessage.success('报文配置保存成功')
   }
   
   visible.value = false

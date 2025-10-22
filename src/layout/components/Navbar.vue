@@ -9,7 +9,7 @@
     <div class="rt items-center flex mr-4">
       <el-dropdown @command="handleCommand" class="avatar-container flex ml-4 right-menu-item hover-effect" trigger="hover">
         <div class="avatar-wrapper flex items-center gap-1">
-          <svg-icon icon-class="user" class="user-avatar-icon" size="20" />
+          <svg-icon icon-class="users" class="user-avatar-icon" size="20" />
           <span class="user-nickname"> {{ userStore.nickName }} </span>
           <svg-icon icon-class="ArrowDown" class="ml-0" />
         </div>

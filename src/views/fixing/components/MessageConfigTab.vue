@@ -21,7 +21,7 @@
           <tr>
             <td class="header-label">接收方</td>
             <td class="header-value" colspan="5">
-              <el-input v-model="messageHeader.receiver" size="small" placeholder="部件1" />
+              <el-input v-model="messageHeader.receiver" disabled size="small" placeholder="" />
             </td>
           </tr>
           <tr>
@@ -178,7 +178,7 @@
 </template>
 
 <script setup name="MessageConfigTab">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { ImportFileDialog } from './index'
 
@@ -197,10 +197,10 @@ const tableRef = ref()
 // 导入对话框显示状态
 const importDialogVisible = ref(false)
 
-// 报文头信息
-const messageHeader = reactive({
+// 默认报文头信息
+const getDefaultHeader = () => ({
   sender: '设备1',
-  receiver: '部件1',
+  receiver: '',
   frequency: 'once',
   baudRate: 460,
   method: '422',
@@ -209,8 +209,8 @@ const messageHeader = reactive({
   errorHandling: 'ignore'
 })
 
-// 报文字段数据
-const messageFields = ref([
+// 默认报文字段数据
+const getDefaultFields = () => [
   {
     id: '1',
     parentId: null,
@@ -376,7 +376,13 @@ const messageFields = ref([
     dataType: 'UINT16',
     scale: '1'
   }
-])
+]
+
+// 报文头信息
+const messageHeader = reactive(getDefaultHeader())
+
+// 报文字段数据
+const messageFields = ref(getDefaultFields())
 
 // 数据类型标签颜色
 function getDataTypeTagType(dataType) {
@@ -431,7 +437,6 @@ function handleAddField() {
     dataType: 'UINT8',
     scale: '1'
   })
-  ElMessage.success('字段已添加')
 }
 
 // 添加子项
@@ -505,10 +510,10 @@ async function validate() {
     ElMessage.error('请输入发送方')
     return false
   }
-  if (!messageHeader.receiver) {
-    ElMessage.error('请输入接收方')
-    return false
-  }
+  // if (!messageHeader.receiver) {
+  //   ElMessage.error('请输入接收方')
+  //   return false
+  // }
   return true
 }
 
@@ -517,19 +522,29 @@ function clearValidate() {
   // VXE Table 不需要清除验证
 }
 
+// 初始化数据
+function initializeData() {
+  if (props.portInfo.messageConfig) {
+    // 加载已有配置（深拷贝避免引用问题）
+    Object.assign(messageHeader, JSON.parse(JSON.stringify(props.portInfo.messageConfig.header)))
+    messageFields.value = JSON.parse(JSON.stringify(props.portInfo.messageConfig.fields || []))
+  } else {
+    // 重置为默认值
+    Object.assign(messageHeader, getDefaultHeader())
+    messageFields.value = getDefaultFields()
+  }
+}
+
+// 监听 portInfo 变化，每次打开不同端口时重新加载数据
+watch(() => props.portInfo, () => {
+  initializeData()
+}, { deep: true, immediate: true })
+
 // 暴露方法
 defineExpose({
   getFormData,
   validate,
   clearValidate
-})
-
-onMounted(() => {
-  // 初始化时加载已有配置
-  if (props.portInfo.messageConfig) {
-    Object.assign(messageHeader, props.portInfo.messageConfig.header)
-    messageFields.value = props.portInfo.messageConfig.fields || []
-  }
 })
 </script>
 

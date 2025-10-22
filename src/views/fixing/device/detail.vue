@@ -25,7 +25,7 @@
             show-icon
           >
             <template #title>
-              <span>💡 提示：双击端口编辑 | 右键设备可添加端口 | 右键端口可编辑/删除</span>
+              <span>💡 提示：双击设备查看协议列表 | 双击端口编辑 | 右键设备可添加端口 | 右键端口可编辑/删除</span>
             </template>
           </el-alert>
         </div>
@@ -37,6 +37,7 @@
               :connection-options="connectionOptions"
               :connection-edge-options="connectionEdgeOptions"
               :custom-menu-handler="customMenuHandler"
+              :enable-double-click-fit="false"
               @ready="onGraphReady"
               @node:click="onNodeClick"
               @node-dblclick="onNodeDblClick"
@@ -71,6 +72,14 @@
         @submit="handleDeviceNameSubmit"
         @close="handleDeviceNameDialogClose"
       />
+
+      <!-- 协议列表抽屉（双击设备节点时打开） -->
+      <ProtocolListDrawer
+        v-model="protocolListDrawerVisible"
+        :title="`${deviceInfo.deviceName || '设备'} - 协议列表`"
+        :device-ports="tempPorts"
+        @protocol-click="handleProtocolClick"
+      />
     </div>
   </ContentWrap>
 </template>
@@ -79,6 +88,7 @@
 import { ref, reactive, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { cloneDeep } from 'lodash-es'
 import ContentWrap from '@/components/ContentWrap/src/ContentWrap.vue'
 import { XFlow, XFlowGraph, XFlowGrid } from '@/components/business/ZxFlow'
 import { registerDagShapes, DAG_EDGE, DAG_CONNECTOR } from '@/components/business/Dag/shapes/registerDagShapes'
@@ -86,6 +96,7 @@ import { getDevice, addDevice, updateDevice } from '@/api/fixing/device'
 import PortEditDialog from '@/views/fixing/components/PortEditDialog.vue'
 import PortConfigDrawer from '@/views/fixing/components/PortConfigDrawer.vue'
 import DeviceNameDialog from '@/views/fixing/components/DeviceNameDialog.vue'
+import ProtocolListDrawer from '@/views/fixing/components/ProtocolListDrawer.vue'
 
 // 注册自定义形状
 registerDagShapes()
@@ -150,6 +161,9 @@ const portDrawerVisible = ref(false)
 const portDrawerTitle = ref('端口配置')
 const currentPortInfo = ref({})
 
+// 协议列表抽屉（双击设备节点时打开）
+const protocolListDrawerVisible = ref(false)
+
 // 设备信息编辑对话框
 const deviceNameDialogVisible = ref(false)
 const deviceNameFormRef = ref(null)
@@ -169,7 +183,7 @@ const tempPorts = ref([])
 /**
  * 获取端口的默认参数配置（根据总线类型）
  * @param {String} interfaceType - 总线类型
- * @returns {Object} 默认参数配置
+ * @returns {Object} 默认参数配置（深拷贝）
  */
 function getDefaultParams(interfaceType) {
   const defaultParamsMap = {
@@ -201,17 +215,30 @@ function getDefaultParams(interfaceType) {
     }
   }
   
-  return defaultParamsMap[interfaceType] || {}
+  // ⚠️ 重要：返回深拷贝，避免多个端口共享同一个对象引用
+  const defaultConfig = defaultParamsMap[interfaceType]
+  return defaultConfig ? cloneDeep(defaultConfig) : {}
 }
 
 /**
- * 获取端口的默认报文配置
- * @returns {Object} 默认报文配置
+ * 获取端口的默认协议配置
+ * @returns {Object} 默认协议配置（深拷贝）
  */
 function getDefaultMessageConfig() {
-  return {
-    messages: []
-  }
+  // ⚠️ 重要：每次调用都返回新对象，避免多个端口共享同一个配置
+  return cloneDeep({
+    header: {
+      sender: '设备1',
+      receiver: '',
+      frequency: 'once',
+      baudRate: 460,
+      method: '422',
+      duration: 0,
+      frameLength: 1,
+      errorHandling: 'ignore'
+    },
+    fields: []
+  })
 }
 
 
@@ -233,7 +260,7 @@ async function handleSave() {
       categoryName: deviceInfo.value.categoryName || '',
       remark: deviceInfo.value.remark || '',
       
-      // 端口配置列表（包含参数和报文配置）
+      // 端口配置列表（包含参数和协议配置）
       interfaces: tempPorts.value.map(port => ({
         interfaceId: port.interfaceId || null,
         interfaceName: port.interfaceName,
@@ -242,7 +269,7 @@ async function handleSave() {
         description: port.description || '',
         // 如果没有参数配置，使用该总线类型的默认配置
         params: port.params || getDefaultParams(port.interfaceType),
-        // 如果没有报文配置，使用默认的空报文配置
+        // 如果没有协议配置，使用默认的空协议配置
         messageConfig: port.messageConfig || getDefaultMessageConfig()
       }))
     }
@@ -268,9 +295,6 @@ async function handleSave() {
       }
     }
     
-  } catch (error) {
-    console.error('保存失败:', error)
-    ElMessage.error(error.message || '保存失败，请稍后重试')
   } finally {
     loading.value = false
   }
@@ -284,8 +308,27 @@ function goBack() {
 /** 加载设备信息 */
 async function loadDeviceInfo() {
   const deviceId = route.params.id
-  if (!deviceId) {
-    ElMessage.error('设备ID不存在')
+  
+  // 如果没有 deviceId，说明是新增设备，初始化空的设备信息
+  if (!deviceId || deviceId === 'new') {
+    // 初始化新设备的默认信息
+    deviceInfo.value = {
+      deviceId: null,
+      deviceName: '新设备',
+      deviceType: '',
+      manufacturer: '',
+      model: '',
+      version: '',
+      busType: '',
+      categoryName: '',
+      remark: '',
+      interfaces: []
+    }
+    // 初始化空的端口列表
+    tempPorts.value = []
+    devicePorts.value = []
+    // 更新图形显示
+    updateGraphData()
     return
   }
 
@@ -307,7 +350,7 @@ async function loadDeviceInfo() {
 async function loadDevicePorts() {
   // 如果设备信息中包含 interfaces 字段，使用它
   if (deviceInfo.value.interfaces && deviceInfo.value.interfaces.length > 0) {
-    // 从后端加载的完整数据（包含参数和报文配置）
+    // 从后端加载的完整数据（包含参数和协议配置）
     tempPorts.value = deviceInfo.value.interfaces.map(intf => ({
       id: intf.interfaceId,
       interfaceId: intf.interfaceId,
@@ -316,10 +359,15 @@ async function loadDevicePorts() {
       interfaceType: intf.interfaceType,
       position: intf.position || 'right',
       description: intf.description || '',
-      // 如果后端返回的数据没有参数配置，使用该总线类型的默认配置
-      params: intf.params || getDefaultParams(intf.interfaceType),
-      // 如果后端返回的数据没有报文配置，使用默认的空报文配置
-      messageConfig: intf.messageConfig || getDefaultMessageConfig()
+      // ⚠️ 重要：深拷贝后端数据，避免引用共享
+      // 如果后端返回的数据有参数配置，深拷贝；否则使用默认配置
+      params: intf.params 
+        ? cloneDeep(intf.params)
+        : getDefaultParams(intf.interfaceType),
+      // 如果后端返回的数据有协议配置，深拷贝；否则使用默认配置
+      messageConfig: intf.messageConfig 
+        ? cloneDeep(intf.messageConfig)
+        : getDefaultMessageConfig()
     }))
   }
   
@@ -589,37 +637,48 @@ function onGraphReady(graph) {
   updateGraphData()
 }
 
-/** 节点双击处理 - 用于处理端口双击 */
-function onNodeDblClick({ node, event }) {
-  console.log('节点双击事件:', node, event)
+/** 节点双击处理 - 用于处理端口双击和设备节点双击 */
+function onNodeDblClick({ node, event, type }) {
+  console.log('🔥🔥🔥 节点双击事件触发 🔥🔥🔥')
+  console.log('节点ID:', node?.id)
   
-  // X6 的事件对象本身可能就是原生事件，或者包含原生事件
-  // 尝试多种方式获取原生 DOM 事件目标
+  // 确保是节点双击事件
+  if (!node) {
+    console.log('⚠️ 节点对象为空')
+    return
+  }
+  
+  // X6 的事件对象
   const e = event
   const target = e?.target || e?.currentTarget || e?.srcElement
   
-  console.log('事件对象:', e)
-  console.log('目标元素:', target)
+  console.log('🎯 目标元素:', target?.tagName, target?.className)
   
-  if (!target) return
+  // 检查点击的元素是否是端口
+  let portElement = null
   
-  // 检查点击的元素是否是端口（portBody）
-  const portElement = target.closest('[port]')
+  try {
+    if (target && typeof target.closest === 'function') {
+      portElement = target.closest('[port]')
+    }
+  } catch (error) {
+    console.error('查找端口元素出错:', error)
+  }
+  
   if (portElement) {
+    // 双击的是端口
     const portId = portElement.getAttribute('port')
-    console.log('双击端口 ID:', portId)
+    console.log('✅ 双击端口 ID:', portId)
     
-    // 找到对应的端口数据
     const portData = tempPorts.value.find(p => (p.id || p.interfaceId) === portId)
     if (portData) {
-      console.log('找到端口数据:', portData)
+      console.log('打开端口配置抽屉')
       handleEditPort(portData)
-    } else {
-      console.log('未找到端口数据，portId:', portId)
-      console.log('所有端口:', tempPorts.value)
     }
   } else {
-    console.log('未找到端口元素, target:', target, 'tagName:', target?.tagName)
+    // 双击的是设备节点本身（不是端口）
+    console.log('🎉🎉🎉 双击设备节点，立即打开协议列表 Drawer 🎉🎉🎉')
+    handleShowProtocolList()
   }
 }
 
@@ -809,10 +868,16 @@ async function handlePortSubmit(formData) {
   console.log('formData', formData)
   // 前端模式：直接操作临时列表
   if (formData.interfaceId) {
-    // 编辑端口
+    // 编辑端口 - 保留原有的 params 和 messageConfig
     const index = tempPorts.value.findIndex(p => (p.id || p.interfaceId) === formData.interfaceId)
     if (index > -1) {
-      tempPorts.value[index] = { ...formData }
+      // ⚠️ 重要：深拷贝，避免引用共享
+      const oldPort = tempPorts.value[index]
+      tempPorts.value[index] = {
+        ...formData,
+        params: oldPort.params,
+        messageConfig: oldPort.messageConfig
+      }
       ElMessage.success('修改成功')
     }
   } else {
@@ -821,9 +886,9 @@ async function handlePortSubmit(formData) {
       ...formData,
       id: `port_${Date.now()}`,
       interfaceId: `port_${Date.now()}`,
-      // 为新端口设置默认参数配置
+      // 为新端口设置默认参数配置（深拷贝）
       params: getDefaultParams(formData.interfaceType),
-      // 为新端口设置默认报文配置
+      // 为新端口设置默认协议配置（深拷贝）
       messageConfig: getDefaultMessageConfig()
     }
     tempPorts.value.push(newPort)
@@ -855,23 +920,29 @@ async function handlePortSubmit(formData) {
   */
 }
 
-/** 提交端口配置 - 用于参数和报文配置 */
+/** 提交端口配置 - 用于参数和协议配置 */
 async function handlePortConfigSubmit(portData) {
   console.log('保存端口配置:', portData)
   
-  // 更新临时列表中的端口配置（包括参数和报文）
+  // 更新临时列表中的端口配置（包括参数和协议）
   const index = tempPorts.value.findIndex(p => (p.id || p.interfaceId) === (portData.interfaceId || portData.id))
   if (index > -1) {
-    // 合并新配置到现有端口数据
+    // ⚠️ 重要：深拷贝配置数据，避免引用共享
     tempPorts.value[index] = {
       ...tempPorts.value[index],
-      params: portData.params || tempPorts.value[index].params, // 参数配置
-      messageConfig: portData.messageConfig || tempPorts.value[index].messageConfig // 报文配置
+      // 深拷贝参数配置
+      params: portData.params 
+        ? cloneDeep(portData.params) 
+        : tempPorts.value[index].params,
+      // 深拷贝协议配置
+      messageConfig: portData.messageConfig 
+        ? cloneDeep(portData.messageConfig) 
+        : tempPorts.value[index].messageConfig
     }
     console.log('端口配置已更新:', tempPorts.value[index])
   }
   
-  // 更新图数据（虽然参数和报文不影响显示，但保持数据同步）
+  // 更新图数据（虽然参数和协议不影响显示，但保持数据同步）
   await loadDevicePorts()
   updateGraphData()
 }
@@ -899,6 +970,27 @@ async function handleDeviceNameSubmit(formData) {
 /** 关闭设备名称对话框 */
 function handleDeviceNameDialogClose() {
   deviceNameFormRef.value?.resetFields()
+}
+
+/** 显示协议列表 */
+function handleShowProtocolList() {
+  console.log('=== 打开协议列表 Drawer ===')
+  console.log('当前 protocolListDrawerVisible 值:', protocolListDrawerVisible.value)
+  console.log('端口数据:', tempPorts.value)
+  protocolListDrawerVisible.value = true
+  console.log('设置后 protocolListDrawerVisible 值:', protocolListDrawerVisible.value)
+}
+
+/** 点击协议 */
+function handleProtocolClick({ port, message }) {
+  console.log('点击协议:', { port, message })
+  // 关闭协议列表抽屉
+  protocolListDrawerVisible.value = false
+  // 打开端口配置抽屉，定位到该协议
+  portDrawerTitle.value = `端口配置 - ${port.interfaceName}`
+  currentPortInfo.value = { ...port }
+  portDrawerVisible.value = true
+  // TODO: 可以添加滚动定位到具体协议的逻辑
 }
 
 // 挂载时加载数据
@@ -936,7 +1028,7 @@ onBeforeUnmount(() => {
     
     .header-actions {
       display: flex;
-      gap: 12px;
+      // gap: 12px;
     }
   }
   

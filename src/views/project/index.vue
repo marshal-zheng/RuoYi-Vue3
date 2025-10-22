@@ -35,7 +35,7 @@
          </el-form-item>
       </el-form>
 
-      <el-row :gutter="10" class="mb8">
+      <el-row :gutter="10" class="mb-10">
          <el-col :span="1.5">
             <el-button
                type="primary"
@@ -77,36 +77,128 @@
          <right-toolbar v-model:showSearch="showSearch" @queryTable="getList"></right-toolbar>
       </el-row>
 
-      <el-table v-loading="loading" :data="projectList" @selection-change="handleSelectionChange">
-         <el-table-column type="selection" width="55" align="center" />
-         <el-table-column label="项目编号" align="center" prop="projectId" />
-         <el-table-column label="项目名称" align="center" :show-overflow-tooltip="true">
-            <template #default="scope">
-               <router-link :to="'/project-detail/index/' + scope.row.projectId" class="link-type">
-                  <span>{{ scope.row.projectName }}</span>
-               </router-link>
-            </template>
-         </el-table-column>
-         <el-table-column label="创建人" align="center" prop="createBy" :show-overflow-tooltip="true"/>
-         <el-table-column label="描述" align="center" prop="description" :show-overflow-tooltip="true" />
-         <el-table-column label="创建时间" align="center" prop="createTime" width="180">
-            <template #default="scope">
-               <span>{{ parseTime(scope.row.createTime) }}</span>
-            </template>
-         </el-table-column>
-         <el-table-column label="最后修改时间" align="center" prop="updateTime" width="180">
-            <template #default="scope">
-               <span>{{ parseTime(scope.row.updateTime) }}</span>
-            </template>
-         </el-table-column>
-         <el-table-column label="操作" align="center" width="200" class-name="small-padding fixed-width">
-            <template #default="scope">
-               <el-button link type="primary" icon="View" @click="handleDetailPage(scope.row)" v-hasPermi="['project:query']">编辑</el-button>
-               <el-button link type="primary" icon="Download" @click="handleExportDialog(scope.row)" v-hasPermi="['project:query']">导出</el-button>
-               <el-button link type="primary" icon="Delete" @click="handleDelete(scope.row)" v-hasPermi="['project:remove']">删除</el-button>
-            </template>
-         </el-table-column>
-      </el-table>
+
+      <!-- 项目卡片列表 -->
+      <div v-loading="loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <el-card 
+          v-for="project in projectList" 
+          :key="project.projectId"
+          class="hover:shadow-lg transition-shadow duration-300 cursor-pointer"
+          :class="{ 'ring-2 ring-blue-500': ids.includes(project.projectId) }"
+        >
+          <!-- 卡片头部 -->
+          <template #header>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-3">
+                <!-- <el-checkbox 
+                  :model-value="ids.includes(project.projectId)"
+                  @change="toggleSelection(project)"
+                  @click.stop
+                /> -->
+                <div>
+                  <h3 class="text-lg font-semibold text-gray-800 truncate">
+                    <router-link 
+                      :to="'/project-detail/index/' + project.projectId" 
+                      class="text-blue-600 hover:text-blue-800 no-underline"
+                      @click.stop
+                    >
+                      {{ project.projectName }}
+                    </router-link>
+                  </h3>
+                  <p class="text-sm text-gray-500">项目编号: {{ project.projectId }}</p>
+                </div>
+              </div>
+              <el-dropdown @click.stop>
+                <el-button type="text" icon="MoreFilled" class="text-gray-400 hover:text-gray-600" />
+                <template #dropdown>
+                  <el-dropdown-menu>
+                    <el-dropdown-item 
+                      icon="View" 
+                      @click="handleDetailPage(project)"
+                      v-hasPermi="['project:query']"
+                    >编辑</el-dropdown-item>
+                    <el-dropdown-item 
+                      icon="Download" 
+                      @click="handleExportDialog(project)"
+                      v-hasPermi="['project:query']"
+                    >导出</el-dropdown-item>
+                    <el-dropdown-item 
+                      icon="Delete" 
+                      @click="handleDelete(project)"
+                      v-hasPermi="['project:remove']"
+                      class="text-red-600"
+                    >删除</el-dropdown-item>
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>
+            </div>
+          </template>
+
+          <!-- 卡片内容 -->
+          <div class="space-y-4">
+            <!-- 项目描述 -->
+            <div>
+              <p class="text-gray-600 text-sm leading-relaxed line-clamp-3">
+                {{ project.description || '暂无描述' }}
+              </p>
+            </div>
+
+            <!-- 项目信息 -->
+            <div class="space-y-2">
+              <div class="flex items-center text-sm">
+                <span class="text-gray-500 w-16">创建人:</span>
+                <span class="text-gray-800 font-medium">{{ project.createBy }}</span>
+              </div>
+              <div class="flex items-center text-sm">
+                <span class="text-gray-500 w-16">创建时间:</span>
+                <span class="text-gray-600">{{ parseTime(project.createTime) }}</span>
+              </div>
+              <div class="flex items-center text-sm">
+                <span class="text-gray-500 w-16">更新时间:</span>
+                <span class="text-gray-600">{{ parseTime(project.updateTime) }}</span>
+              </div>
+            </div>
+
+            <!-- 操作按钮 -->
+            <div class="flex justify-end space-x-2 pt-2 border-t border-gray-100">
+              <el-button 
+                size="small" 
+                type="primary" 
+                icon="View" 
+                @click.stop="handleDetailPage(project)" 
+                v-hasPermi="['project:query']"
+              >编辑</el-button>
+              <el-button 
+                size="small" 
+                type="success" 
+                icon="Download" 
+                @click.stop="handleExportDialog(project)" 
+                v-hasPermi="['project:query']"
+              >导出</el-button>
+              <el-button 
+                size="small" 
+                type="danger" 
+                icon="Delete" 
+                @click.stop="handleDelete(project)" 
+                v-hasPermi="['project:remove']"
+              >删除</el-button>
+            </div>
+          </div>
+        </el-card>
+      </div>
+
+      <!-- 空状态 -->
+      <div v-if="!loading && projectList.length === 0" class="text-center py-12">
+        <div class="text-gray-400 text-6xl mb-4">📁</div>
+        <h3 class="text-lg font-medium text-gray-600 mb-2">暂无项目</h3>
+        <p class="text-gray-500 mb-4">还没有创建任何项目，点击新增按钮开始创建吧</p>
+        <el-button 
+          type="primary" 
+          icon="Plus" 
+          @click="handleAddProject"
+          v-hasPermi="['project:add']"
+        >创建项目</el-button>
+      </div>
 
       <pagination
          v-show="total > 0"
@@ -190,51 +282,35 @@ function getList() {
     rows: [
       {
         projectId: 1,
-        projectName: "智能协议分析系统",
-        createBy: "张三",
-        description: "用于网络协议智能分析和处理的系统",
+        projectName: "多旋翼无人机飞控系统",
+        createBy: "李航宇",
+        description: "基于STM32的四旋翼无人机飞行控制系统，集成IMU惯导、GPS定位、电调ESC等核心模块",
         createTime: "2024-01-15 10:30:00",
         updateTime: "2024-01-20 14:25:00"
       },
       {
         projectId: 2,
-        projectName: "数据传输协议优化",
-        createBy: "李四",
-        description: "优化现有数据传输协议，提升传输效率",
+        projectName: "固定翼无人机自主导航",
+        createBy: "张翔宇",
+        description: "固定翼无人机自主飞行导航系统，支持航点规划、自动起降、避障飞行等功能",
         createTime: "2024-01-10 09:15:00",
         updateTime: "2024-01-18 16:40:00"
       },
       {
         projectId: 3,
-        projectName: "网络安全协议验证",
-        createBy: "王五",
-        description: "验证和测试各种网络安全协议的可靠性",
+        projectName: "无人机集群协同控制",
+        createBy: "王飞行",
+        description: "多架无人机集群协同作业控制系统，实现编队飞行、任务分配、通信协调等功能",
         createTime: "2024-01-08 11:20:00",
         updateTime: "2024-01-22 13:55:00"
-      },
-      {
-        projectId: 4,
-        projectName: "物联网通信协议",
-        createBy: "赵六",
-        description: "设计适用于物联网设备的轻量级通信协议",
-        createTime: "2024-01-05 14:45:00",
-        updateTime: "2024-01-19 10:30:00"
-      },
-      {
-        projectId: 5,
-        projectName: "实时流媒体协议",
-        createBy: "陈七",
-        description: "开发高效的实时流媒体传输协议",
-        createTime: "2024-01-03 16:10:00",
-        updateTime: "2024-01-21 09:15:00"
       }
     ],
-    total: 5
+    total: 8
   }
   
   try {
     listProject(proxy.addDateRange(queryParams.value, dateRange.value)).then(response => {
-      projectList.value = response.rows
+      projectList.value = mockData.rows
       total.value = response.total
       loading.value = false
     }).catch(error => {
@@ -294,6 +370,18 @@ function handleSelectionChange(selection) {
   ids.value = selection.map(item => item.projectId)
   single.value = selection.length != 1
   multiple.value = !selection.length
+}
+
+/** 切换项目选择状态 */
+function toggleSelection(project) {
+  const index = ids.value.indexOf(project.projectId)
+  if (index > -1) {
+    ids.value.splice(index, 1)
+  } else {
+    ids.value.push(project.projectId)
+  }
+  single.value = ids.value.length != 1
+  multiple.value = !ids.value.length
 }
 
 /** 修改按钮操作 */

@@ -203,9 +203,9 @@ const positionLabel = computed(() => {
 
 /** 初始化参数表单 */
 function initParamsForm() {
-  // 从 portInfo 中加载已有的参数配置
+  // 从 portInfo 中加载已有的参数配置（深拷贝避免引用问题）
   if (props.portInfo.params) {
-    Object.assign(paramsForm, props.portInfo.params)
+    Object.assign(paramsForm, JSON.parse(JSON.stringify(props.portInfo.params)))
   } else {
     // 设置默认值
     resetParamsForm()
