@@ -1,2 +1,8 @@
 export { default as InterfaceTypeSelector } from './InterfaceTypeSelector.vue'
 export { default as PositionSelector } from './PositionSelector.vue'
+export { default as BaudRateSelector } from './BaudRateSelector.vue'
+export { default as DataBitsSelector } from './DataBitsSelector.vue'
+export { default as StopBitsSelector } from './StopBitsSelector.vue'
+export { default as ParitySelector } from './ParitySelector.vue'
+export { default as CanModeSelector } from './CanModeSelector.vue'
+export { default as ProtocolSelector } from './ProtocolSelector.vue'

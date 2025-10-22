@@ -1047,6 +1047,14 @@
   dependencies:
     vue-demi "*"
 
+"@vxe-ui/core@^4.2.12":
+  version "4.2.12"
+  resolved "https://registry.npmmirror.com/@vxe-ui/core/-/core-4.2.12.tgz#68882916b9d80f7ca7ad2453b9be47ec98501da1"
+  integrity sha512-g6gNDykKrKLzxsDDFDYTD/6tWrV9AfSaU7WIlKCO67BSXgKDMaEVTsH7ZZ7fI5qkOO9DH1vo07kbacyBNx7gSQ==
+  dependencies:
+    dom-zindex "^1.0.6"
+    xe-utils "^3.7.9"
+
 "@webgpu/glslang@^0.0.15":
   version "0.0.15"
   resolved "https://registry.npmmirror.com/@webgpu/glslang/-/glslang-0.0.15.tgz#f5ccaf6015241e6175f4b90906b053f88483d1f2"
@@ -1066,6 +1074,11 @@ acorn@^8.14.0, acorn@^8.15.0:
   version "8.15.0"
   resolved "https://registry.yarnpkg.com/acorn/-/acorn-8.15.0.tgz#a360898bc415edaac46c8241f6383975b930b816"
   integrity sha512-NZyJarBfL7nWwIq+FDL6Zp/yHEhePMNnnJ0y3qfieCrmNvYct8uvtiV41UvlSe6apAfk0fY1FbWx+NwfmpvtTg==
+
+adler-32@~1.3.0:
+  version "1.3.1"
+  resolved "https://registry.npmmirror.com/adler-32/-/adler-32-1.3.1.tgz#1dbf0b36dda0012189a32b3679061932df1821e2"
+  integrity sha512-ynZ4w/nUUv5rrsR8UUGoe1VC9hZj6V5hU9Qw1HlMDJGEJw5S7TfTErWTjMys6M7vr0YWcPqs3qAr4ss0nDfP+A==
 
 alien-signals@^3.0.0:
   version "3.0.3"
@@ -1352,6 +1365,14 @@ canvg@^3.0.11:
     stackblur-canvas "^2.0.0"
     svg-pathdata "^6.0.3"
 
+cfb@~1.2.1:
+  version "1.2.2"
+  resolved "https://registry.npmmirror.com/cfb/-/cfb-1.2.2.tgz#94e687628c700e5155436dac05f74e08df23bc44"
+  integrity sha512-KfdUZsSOw19/ObEWasvBP/Ac4reZvAGauZhs6S/gqNhXhI7cKwvlH7ulj+dOEYnca4bm4SGo8C1bTAQvnTjgQA==
+  dependencies:
+    adler-32 "~1.3.0"
+    crc-32 "~1.2.0"
+
 chalk@^1.1.3:
   version "1.1.3"
   resolved "https://registry.yarnpkg.com/chalk/-/chalk-1.1.3.tgz#a8115c55e4a702fe4d150abd3872822a7e09fc98"
@@ -1394,6 +1415,11 @@ clone@^2.1.1:
   version "2.1.2"
   resolved "https://registry.yarnpkg.com/clone/-/clone-2.1.2.tgz#1b7f4b9f591f1e8f83670401600345a02887435f"
   integrity sha512-3Pe/CF1Nn94hyhIYpjtiLhdCoEoz0DqQ+988E9gmeEdQZlojxnOb74wctFyuwWQHzqyf9X7C7MG8juUpqBJT8w==
+
+codepage@~1.15.0:
+  version "1.15.0"
+  resolved "https://registry.npmmirror.com/codepage/-/codepage-1.15.0.tgz#2e00519024b39424ec66eeb3ec07227e692618ab"
+  integrity sha512-3g6NUTPd/YtuuGrhMnOMRjFc+LJw/bnMp3+0r/Wcz3IXUuCosKRJvMphm5+Q+bvTVGcJJuRvVLuYba+WojaFaA==
 
 collection-visit@^1.0.0:
   version "1.0.0"
@@ -1484,6 +1510,11 @@ cors@^2.8.5:
   dependencies:
     object-assign "^4"
     vary "^1"
+
+crc-32@~1.2.0, crc-32@~1.2.1:
+  version "1.2.2"
+  resolved "https://registry.npmmirror.com/crc-32/-/crc-32-1.2.2.tgz#3cad35a934b8bf71f25ca524b6da51fb7eace2ff"
+  integrity sha512-ROmzCKrTnOwybPcJApAA6WBWij23HVfGVNKqqrZpuyZOHqK2CwHSvpGuyt/UNNvaIjEd8X5IFGp4Mh+Ie1IHJQ==
 
 cross-spawn@^7.0.6:
   version "7.0.6"
@@ -1700,6 +1731,11 @@ dom-serializer@^1.0.1:
     domelementtype "^2.0.1"
     domhandler "^4.2.0"
     entities "^2.0.0"
+
+dom-zindex@^1.0.6:
+  version "1.0.6"
+  resolved "https://registry.npmmirror.com/dom-zindex/-/dom-zindex-1.0.6.tgz#0f911b39d3e542232ad91307638dbb869643f89e"
+  integrity sha512-FKWIhiU96bi3xpP9ewRMgANsoVmMUBnMnmpCT6dPMZOunVYJQmJhSRruoI0XSPoHeIif3kyEuiHbFrOJwEJaEA==
 
 domelementtype@1, domelementtype@^1.3.1:
   version "1.3.1"
@@ -2176,6 +2212,11 @@ form-data@^4.0.0:
     es-set-tostringtag "^2.1.0"
     hasown "^2.0.2"
     mime-types "^2.1.12"
+
+frac@~1.1.2:
+  version "1.1.2"
+  resolved "https://registry.npmmirror.com/frac/-/frac-1.1.2.tgz#3d74f7f6478c88a1b5020306d747dc6313c74d0b"
+  integrity sha512-w/XBfkibaTl3YDqASwfDUqkna4Z2p9cFSr1aHDt0WoMTECnRfBOv2WArlZILlqgWlmdIlALXGpM2AOhEk5W3IA==
 
 fraction.js@^4.3.7:
   version "4.3.7"
@@ -4084,6 +4125,13 @@ splitpanes@4.0.4:
   resolved "https://registry.yarnpkg.com/splitpanes/-/splitpanes-4.0.4.tgz#e8dfbbef4e93853ea336dc43f903e20946b42c1d"
   integrity sha512-RbysugZhjbCw5fgplvk3hOXr41stahQDtZhHVkhnnJI6H4wlGDhM2kIpbehy7v92duy9GnMa8zIhHigIV1TWtg==
 
+ssf@~0.11.2:
+  version "0.11.2"
+  resolved "https://registry.npmmirror.com/ssf/-/ssf-0.11.2.tgz#0b99698b237548d088fc43cdf2b70c1a7512c06c"
+  integrity sha512-+idbmIXoYET47hH+d7dfm2epdOMUDjqcB4648sTZ+t2JwoyBFL/insLfB/racrDmsKB3diwsDA696pZMieAC5g==
+  dependencies:
+    frac "~1.1.2"
+
 stable@^0.1.8:
   version "0.1.8"
   resolved "https://registry.yarnpkg.com/stable/-/stable-0.1.8.tgz#836eb3c8382fe2936feaf544631017ce7d47a3cf"
@@ -4672,6 +4720,25 @@ vuedraggable@4.1.0:
   dependencies:
     sortablejs "1.14.0"
 
+vxe-pc-ui@^4.8.0:
+  version "4.10.6"
+  resolved "https://registry.npmmirror.com/vxe-pc-ui/-/vxe-pc-ui-4.10.6.tgz#c28dd3cec6f3d1e0e18a2ea2fa840fa06eebf891"
+  integrity sha512-/CBPgt6vs04evoA3sOixhVaAB5cvwli+fYQz8AwY7mqg8tw1S/fxletAmyYvxRxJ4aW0cjOtgj4A3h7o6weGkQ==
+  dependencies:
+    "@vxe-ui/core" "^4.2.12"
+
+vxe-table-plugin-element@^4.0.4:
+  version "4.0.4"
+  resolved "https://registry.npmmirror.com/vxe-table-plugin-element/-/vxe-table-plugin-element-4.0.4.tgz#36c723ab7ab7a8a9304a9f61bd6d9095f4d3f066"
+  integrity sha512-TKhx4Bi45kdXRa9PyjdDtOjQuA9We+ASDdZez/d3DB7p2tFvBwVNnyvwYHT+kJntAeq0pOchmhsYhZeVADMAuw==
+
+vxe-table@4:
+  version "4.17.0"
+  resolved "https://registry.npmmirror.com/vxe-table/-/vxe-table-4.17.0.tgz#42c8891ec19da0e55514fb5ac3d846c59908d083"
+  integrity sha512-IpyY5uzgMt4NEgTl0brAFe/xSyrBK8U0763uCG8LUe8TbGVuWMD5bCP9DYqkjK7cBmJjXtzwxlQ6I3auzCGd3Q==
+  dependencies:
+    vxe-pc-ui "^4.8.0"
+
 webpack-virtual-modules@^0.6.2:
   version "0.6.2"
   resolved "https://registry.yarnpkg.com/webpack-virtual-modules/-/webpack-virtual-modules-0.6.2.tgz#057faa9065c8acf48f24cb57ac0e77739ab9a7e8"
@@ -4737,6 +4804,16 @@ which@^2.0.1:
   dependencies:
     isexe "^2.0.0"
 
+wmf@~1.0.1:
+  version "1.0.2"
+  resolved "https://registry.npmmirror.com/wmf/-/wmf-1.0.2.tgz#7d19d621071a08c2bdc6b7e688a9c435298cc2da"
+  integrity sha512-/p9K7bEh0Dj6WbXg4JG0xvLQmIadrner1bi45VMJTfnbVHsc7yIajZyoSoK60/dtVBs12Fm6WkUI5/3WAVsNMw==
+
+word@~0.3.0:
+  version "0.3.0"
+  resolved "https://registry.npmmirror.com/word/-/word-0.3.0.tgz#8542157e4f8e849f4a363a288992d47612db9961"
+  integrity sha512-OELeY0Q61OXpdUfTp+oweA/vtLVg5VDOXh+3he3PNzLGG/y0oylSOC1xRVj0+l4vQ3tj/bB1HVHv1ocXkQceFA==
+
 "wrap-ansi-cjs@npm:wrap-ansi@^7.0.0":
   version "7.0.0"
   resolved "https://registry.yarnpkg.com/wrap-ansi/-/wrap-ansi-7.0.0.tgz#67e145cff510a6a6984bdf1152911d69d2eb9e43"
@@ -4754,6 +4831,24 @@ wrap-ansi@^8.1.0:
     ansi-styles "^6.1.0"
     string-width "^5.0.1"
     strip-ansi "^7.0.1"
+
+xe-utils@^3.7.9:
+  version "3.7.9"
+  resolved "https://registry.npmmirror.com/xe-utils/-/xe-utils-3.7.9.tgz#e14a861bd8b3103037ef86e437baafbee5a6bb50"
+  integrity sha512-LWH6M7g+TKX8P2fqGxDPgJQygiULhbMtpmfxTMxJTUjuUv9y2+I45UCcVLh5AnmJSxDV1xTxsq7G5P9Eid06JQ==
+
+xlsx@^0.18.5:
+  version "0.18.5"
+  resolved "https://registry.npmmirror.com/xlsx/-/xlsx-0.18.5.tgz#16711b9113c848076b8a177022799ad356eba7d0"
+  integrity sha512-dmg3LCjBPHZnQp5/F/+nnTa+miPJxUXB6vtk42YjBBKayDNagxGEeIdWApkYPOf3Z3pm3k62Knjzp7lMeTEtFQ==
+  dependencies:
+    adler-32 "~1.3.0"
+    cfb "~1.2.1"
+    codepage "~1.15.0"
+    crc-32 "~1.2.1"
+    ssf "~0.11.2"
+    wmf "~1.0.1"
+    word "~0.3.0"
 
 zrender@5.6.1:
   version "5.6.1"
