@@ -346,22 +346,16 @@ const initGraph = async () => {
         ...props.nodeAvailableHighlightOptions
       },
       magnetAvailable: {
-        name: 'stroke',
+        name: 'className',
         args: {
-          attrs: {
-            fill: '#1890ff',
-            stroke: '#1890ff'
-          }
+          className: 'available'
         },
         ...props.magnetAvailableHighlightOptions
       },
       magnetAdsorbed: {
-        name: 'stroke',
+        name: 'className',
         args: {
-          attrs: {
-            fill: '#52c41a',
-            stroke: '#52c41a'
-          }
+          className: 'adsorbed'
         },
         ...props.magnetAdsorbedHighlightOptions
       }

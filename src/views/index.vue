@@ -41,7 +41,7 @@ const operators = ref([
 ])
 
 const loading = ref(false)
-const layoutMode = ref('vertical') // 'vertical' | 'horizontal'
+const layoutMode = ref('horizontal') // 'vertical' | 'horizontal'
 
 // 可配置的文案和设置
 const dndConfig = {

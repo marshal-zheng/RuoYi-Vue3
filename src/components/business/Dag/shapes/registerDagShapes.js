@@ -42,67 +42,49 @@ export const registerDagShapes = () => {
         return options.raw ? path : path.serialize()
       }
 
-      const offset = 4
       const deltaY = Math.abs(targetPoint.y - sourcePoint.y)
       const deltaX = Math.abs(targetPoint.x - sourcePoint.x)
-      const isHorizontal = deltaX > deltaY
-
+      
       const path = new Path()
       path.appendSegment(Path.createSegment('M', sourcePoint))
 
+      // 最小控制距离，避免节点过近时曲线太扁
+      const minControl = 50
+      
+      // 根据连接方向判断主要是横向还是纵向
+      const isHorizontal = deltaX > deltaY
+      
+      let control1, control2
+      
       if (isHorizontal) {
-        const control = Math.floor((deltaX / 3) * 2)
-        path.appendSegment(
-          Path.createSegment('L', {
-            x: sourcePoint.x + offset,
-            y: sourcePoint.y
-          })
-        )
-        path.appendSegment(
-          Path.createSegment(
-            'C',
-            {
-              x: sourcePoint.x + offset + control,
-              y: sourcePoint.y
-            },
-            {
-              x: targetPoint.x - offset - control,
-              y: targetPoint.y
-            },
-            {
-              x: targetPoint.x - offset,
-              y: targetPoint.y
-            }
-          )
-        )
-        path.appendSegment(Path.createSegment('L', targetPoint))
+        // 横向连接：控制点在水平方向延伸，考虑方向避免回折
+        const direction = targetPoint.x > sourcePoint.x ? 1 : -1
+        const hControl = Math.max(deltaX * 0.5, minControl) * direction
+        control1 = {
+          x: sourcePoint.x + hControl,
+          y: sourcePoint.y
+        }
+        control2 = {
+          x: targetPoint.x - hControl,
+          y: targetPoint.y
+        }
       } else {
-        const control = Math.floor((deltaY / 3) * 2)
-        path.appendSegment(
-          Path.createSegment('L', {
-            x: sourcePoint.x,
-            y: sourcePoint.y + offset
-          })
-        )
-        path.appendSegment(
-          Path.createSegment(
-            'C',
-            {
-              x: sourcePoint.x,
-              y: sourcePoint.y + offset + control
-            },
-            {
-              x: targetPoint.x,
-              y: targetPoint.y - offset - control
-            },
-            {
-              x: targetPoint.x,
-              y: targetPoint.y - offset
-            }
-          )
-        )
-        path.appendSegment(Path.createSegment('L', targetPoint))
+        // 纵向连接：控制点在垂直方向延伸
+        const vControl = Math.max(deltaY * 0.5, minControl)
+        control1 = {
+          x: sourcePoint.x,
+          y: sourcePoint.y + vControl
+        }
+        control2 = {
+          x: targetPoint.x,
+          y: targetPoint.y - vControl
+        }
       }
+
+      // 使用三次贝塞尔曲线
+      path.appendSegment(
+        Path.createSegment('C', control1, control2, targetPoint)
+      )
 
       return options.raw ? path : path.serialize()
     },

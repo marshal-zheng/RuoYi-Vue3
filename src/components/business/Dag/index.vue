@@ -173,7 +173,6 @@ import DagConnect from './components/DagConnect.vue'
 import DagDnd from './components/DagDnd.vue'
 import DagGraphControl from './components/DagGraphControl.vue'
 import DagInitData from './components/DagInitData.vue'
-import DagToolbar from './components/DagToolbar.vue'
 // import DagMatrixDialog from './components/DagMatrixDialog.vue'
 import { DAG_CONNECTOR, DAG_EDGE } from './shapes/registerDagShapes'
 import { dagreLayout } from './utils/layout.js'
@@ -1009,11 +1008,6 @@ defineExpose({
       fill: #52c41a !important;
       stroke: #52c41a !important;
     }
-  }
-
-  /* hover 节点时显示所有端口 */
-  .x6-node:hover .x6-port-body {
-    opacity: 1;
   }
 
   /* 连接模式时显示所有端口 */

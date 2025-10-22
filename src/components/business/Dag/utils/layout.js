@@ -2,7 +2,7 @@ import { getNodeSizeByDirection } from './nodeGeometry.js'
 
 // 简单的 dagre 风格布局实现，避免 @antv/layout 的兼容性问题
 // direction: 'TB' | 'LR' (只支持竖向和横向)
-export async function dagreLayout(graph, direction = 'TB', ranksep = 120, nodesep = 60) {
+export async function dagreLayout(graph, direction = 'TB', ranksep = 150, nodesep = 60) {
   if (!graph) return
   const g = graph?.value ?? graph
   if (!g) return

@@ -6,7 +6,7 @@
 // 连接桩基础配置
 export const PORT_CONFIG = {
   // 连接桩半径
-  radius: 4,
+  radius: 8,
   // 连接桩边框宽度
   strokeWidth: 2,
   // 连接桩边框颜色
