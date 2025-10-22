@@ -159,30 +159,30 @@ export const dynamicRoutes = [
     ]
   },
   {
-    path: '/protocol/project-detail',
+    path: '/project-detail',
     component: Layout,
     hidden: true,
-    permissions: ['protocol:project:list'],
+    permissions: ['project:list'],
     children: [
       {
         path: 'index/:projectId',
-        component: () => import('@/views/protocol/project/detail'),
+        component: () => import('@/views/project/detail'),
         name: 'ProjectDetail',
-        meta: { title: '项目详情', activeMenu: '/protocol/project' }
+        meta: { title: '项目详情', activeMenu: '/project' }
       }
     ]
   },
   {
-    path: '/protocol/device-detail',
+    path: '/fixing/device-detail',
     component: Layout,
     hidden: true,
-    permissions: ['protocol:device:list'],
+    permissions: ['fixing:device:list'],
     children: [
       {
         path: 'index/:deviceId',
-        component: () => import('@/views/protocol/device/detail'),
+        component: () => import('@/views/fixing/device/detail'),
         name: 'DeviceDetail',
-        meta: { title: '设备详情', activeMenu: '/protocol/device' }
+        meta: { title: '设备详情', activeMenu: '/fixing/device' }
       }
     ]
   }

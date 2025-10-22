@@ -320,3 +320,4 @@ export function checkDeviceNameUnique(deviceName, deviceId) {
     }
   })
 }
+

@@ -42,7 +42,7 @@
 <script setup name="PortEditDialog">
 import { ref, reactive, watch } from 'vue'
 import { ElMessage } from 'element-plus'
-import { InterfaceTypeSelector, PositionSelector } from '@/views/protocol/components/selector'
+import { InterfaceTypeSelector, PositionSelector } from '@/views/fixing/components/selector'
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },

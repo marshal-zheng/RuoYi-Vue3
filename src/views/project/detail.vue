@@ -22,8 +22,8 @@
 import { ref, onMounted } from 'vue'
 import ContentWrap from "@/components/ContentWrap/src/ContentWrap.vue"
 import XflowDAG from "@/components/business/Dag/index.vue"
-import { NodeEditDrawer } from '../components'
-import { listDevice, listDeviceBusInterface } from '@/api/protocol/device'
+import { NodeEditDrawer } from './components'
+import { listDevice, listDeviceBusInterface } from '@/api/fixing/device'
 import { ElMessage } from 'element-plus'
 
 const version = ref('3.9.0')

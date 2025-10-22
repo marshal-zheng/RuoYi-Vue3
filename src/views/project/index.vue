@@ -42,7 +42,7 @@
                plain
                icon="Plus"
                @click="handleAddProject"
-               v-hasPermi="['protocol:project:add']"
+               v-hasPermi="['project:add']"
             >新增</el-button>
          </el-col>
          <el-col :span="1.5">
@@ -52,7 +52,7 @@
                icon="Edit"
                :disabled="single"
                @click="handleUpdate"
-               v-hasPermi="['protocol:project:edit']"
+               v-hasPermi="['project:edit']"
             >修改</el-button>
          </el-col>
          <el-col :span="1.5">
@@ -62,7 +62,7 @@
                icon="Delete"
                :disabled="multiple"
                @click="handleDelete"
-               v-hasPermi="['protocol:project:remove']"
+               v-hasPermi="['project:remove']"
             >删除</el-button>
          </el-col>
          <el-col :span="1.5">
@@ -71,7 +71,7 @@
                plain
                icon="Download"
                @click="handleExport"
-               v-hasPermi="['protocol:project:export']"
+               v-hasPermi="['project:export']"
             >导出</el-button>
          </el-col>
          <right-toolbar v-model:showSearch="showSearch" @queryTable="getList"></right-toolbar>
@@ -82,7 +82,7 @@
          <el-table-column label="项目编号" align="center" prop="projectId" />
          <el-table-column label="项目名称" align="center" :show-overflow-tooltip="true">
             <template #default="scope">
-               <router-link :to="'/protocol/project-detail/index/' + scope.row.projectId" class="link-type">
+               <router-link :to="'/project-detail/index/' + scope.row.projectId" class="link-type">
                   <span>{{ scope.row.projectName }}</span>
                </router-link>
             </template>
@@ -101,9 +101,9 @@
          </el-table-column>
          <el-table-column label="操作" align="center" width="200" class-name="small-padding fixed-width">
             <template #default="scope">
-               <el-button link type="primary" icon="View" @click="handleDetailPage(scope.row)" v-hasPermi="['protocol:project:query']">编辑</el-button>
-               <el-button link type="primary" icon="Download" @click="handleExportDialog(scope.row)" v-hasPermi="['protocol:project:query']">导出</el-button>
-               <el-button link type="primary" icon="Delete" @click="handleDelete(scope.row)" v-hasPermi="['protocol:project:remove']">删除</el-button>
+               <el-button link type="primary" icon="View" @click="handleDetailPage(scope.row)" v-hasPermi="['project:query']">编辑</el-button>
+               <el-button link type="primary" icon="Download" @click="handleExportDialog(scope.row)" v-hasPermi="['project:query']">导出</el-button>
+               <el-button link type="primary" icon="Delete" @click="handleDelete(scope.row)" v-hasPermi="['project:remove']">删除</el-button>
             </template>
          </el-table-column>
       </el-table>
@@ -144,9 +144,9 @@
 </template>
 
 <script setup name="Project">
-import { listProject, getProject, delProject, addProject, updateProject, exportProject } from "@/api/protocol/project"
+import { listProject, getProject, delProject, addProject, updateProject, exportProject } from "@/api/project"
 import ContentWrap from "@/components/ContentWrap/src/ContentWrap.vue"
-import { ExportDialog } from "../components"
+import { ExportDialog } from "./components"
 
 const { proxy } = getCurrentInstance()
 const router = useRouter()
@@ -337,7 +337,7 @@ function handleUpdate(row) {
 function handleDetail(row) {
   // 跳转到项目详情页面（拓扑设计、仿真等工作区）
   router.push({
-    path: '/protocol/project/detail/' + row.projectId,
+    path: '/project-detail/index/' + row.projectId,
     query: {
       projectName: row.projectName
     }
@@ -420,7 +420,7 @@ function handleDelete(row) {
 /** 导出按钮操作 */
 function handleExport() {
   try {
-    proxy.download("protocol/project/export", {
+    proxy.download("project/export", {
       ...queryParams.value
     }, `project_${new Date().getTime()}.xlsx`)
   } catch (error) {
@@ -432,13 +432,13 @@ function handleExport() {
 /** 新增项目按钮操作 - 跳转到详情页面 */
 function handleAddProject() {
   // 跳转到项目详情页面，用于新增项目配置
-  proxy.$router.push('/protocol/project-detail/index/new')
+  proxy.$router.push('/project-detail/index/new')
 }
 
 /** 详情页面按钮操作 - 跳转到详情页面 */
 function handleDetailPage(row) {
   // 跳转到项目详情页面，用于管理项目配置
-  proxy.$router.push('/protocol/project-detail/index/' + row.projectId)
+  proxy.$router.push('/project-detail/index/' + row.projectId)
 }
 
 /** 打开导出弹框 */
@@ -456,7 +456,7 @@ function handleProjectExport(exportParams) {
     const fileName = `${exportParams.fileName}.${exportParams.fileType}`
     
     // 调用下载接口
-    proxy.download("protocol/project/export", {
+    proxy.download("project/export", {
       ...exportParams,
       ...queryParams.value
     }, fileName)

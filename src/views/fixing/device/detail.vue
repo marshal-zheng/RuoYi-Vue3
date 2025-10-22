@@ -4,7 +4,7 @@
       <!-- 页面标题 -->
       <div class="page-header">
         <div class="header-left">
-          <h2>设备端口配置 - {{ deviceInfo.deviceName || '加载中...' }}</h2>
+          <h2>设备端口配置 {{ deviceInfo.deviceName }}</h2>
           <el-tag v-if="!loading" type="info" size="large">
             已配置 {{ devicePorts.length }} 个端口
           </el-tag>
@@ -81,10 +81,10 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import ContentWrap from '@/components/ContentWrap/src/ContentWrap.vue'
 import { XFlow, XFlowGraph, XFlowGrid } from '@/components/business/ZxFlow'
 import { registerDagShapes, DAG_EDGE, DAG_CONNECTOR } from '@/components/business/Dag/shapes/registerDagShapes'
-import { getDevice } from '@/api/protocol/device'
-import PortEditDialog from '@/views/protocol/components/PortEditDialog.vue'
-import PortConfigDrawer from '@/views/protocol/components/PortConfigDrawer.vue'
-import DeviceNameDialog from '@/views/protocol/components/DeviceNameDialog.vue'
+import { getDevice } from '@/api/fixing/device'
+import PortEditDialog from '@/views/fixing/components/PortEditDialog.vue'
+import PortConfigDrawer from '@/views/fixing/components/PortConfigDrawer.vue'
+import DeviceNameDialog from '@/views/fixing/components/DeviceNameDialog.vue'
 
 // 注册自定义形状
 registerDagShapes()
@@ -166,7 +166,7 @@ const tempPorts = ref([])
 
 /** 返回列表 */
 function goBack() {
-  router.push('/protocol/device')
+  router.push('/fixing/device')
 }
 
 /** 加载设备信息 */

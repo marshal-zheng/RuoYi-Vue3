@@ -96,7 +96,7 @@
          <el-table-column label="设备编号" align="center" prop="deviceId" width="100" />
          <el-table-column label="设备名称" align="center" :show-overflow-tooltip="true">
             <template #default="scope">
-               <router-link :to="'/protocol/device-detail/index/' + scope.row.deviceId" class="link-type">
+               <router-link :to="'/fixing/device-detail/index/' + scope.row.deviceId" class="link-type">
                   <span>{{ scope.row.deviceName }}</span>
                </router-link>
             </template>
@@ -208,7 +208,7 @@
 </template>
 
 <script setup name="Device">
-import { listDevice, getDevice, delDevice, addDevice, updateDevice, exportDevice, importDeviceData } from "@/api/protocol/device"
+import { listDevice, getDevice, delDevice, addDevice, updateDevice, exportDevice, importDeviceData } from "@/api/fixing/device"
 import ContentWrap from "@/components/ContentWrap/src/ContentWrap.vue"
 
 const { proxy } = getCurrentInstance()
@@ -524,13 +524,13 @@ function handleExport() {
 /** 新增设备按钮操作 - 跳转到详情页面 */
 function handleAddDevice() {
   // 跳转到设备详情页面，用于新增设备配置
-  proxy.$router.push('/protocol/device-detail/index/new')
+  proxy.$router.push('/fixing/device-detail/index/new')
 }
 
 /** 详情页面按钮操作 - 跳转到详情页面 */
 function handleDetailPage(row) {
   // 跳转到设备详情页面，用于管理设备配置
-  proxy.$router.push('/protocol/device-detail/index/' + row.deviceId)
+  proxy.$router.push('/fixing/device-detail/index/' + row.deviceId)
 }
 
 /** 导入数据按钮操作 */
