@@ -157,6 +157,34 @@ export const dynamicRoutes = [
         meta: { title: '修改生成配置', activeMenu: '/tool/gen' }
       }
     ]
+  },
+  {
+    path: '/protocol/project-detail',
+    component: Layout,
+    hidden: true,
+    permissions: ['protocol:project:list'],
+    children: [
+      {
+        path: 'index/:projectId',
+        component: () => import('@/views/protocol/project/detail'),
+        name: 'ProjectDetail',
+        meta: { title: '项目详情', activeMenu: '/protocol/project' }
+      }
+    ]
+  },
+  {
+    path: '/protocol/device-detail',
+    component: Layout,
+    hidden: true,
+    permissions: ['protocol:device:list'],
+    children: [
+      {
+        path: 'index/:deviceId',
+        component: () => import('@/views/protocol/device/detail'),
+        name: 'DeviceDetail',
+        meta: { title: '设备详情', activeMenu: '/protocol/device' }
+      }
+    ]
   }
 ]
 

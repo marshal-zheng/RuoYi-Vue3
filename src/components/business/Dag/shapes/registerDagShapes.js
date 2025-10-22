@@ -2,9 +2,11 @@ import { Graph } from '@antv/x6'
 import { Curve, Path } from '@antv/x6-geometry'
 import { register } from '@antv/x6-vue-shape'
 import DagNode from './DagNode.vue'
+import DevicePortNode from './DevicePortNode.vue'
 import { PORT_GROUPS } from '../constants/portConfig.js'
 
 export const DAG_NODE = 'dag-node'
+export const DEVICE_PORT_NODE = 'device-port-node'
 export const DAG_EDGE = 'dag-edge'
 export const DAG_CONNECTOR = 'dag-connector'
 
@@ -25,6 +27,24 @@ export const registerDagShapes = () => {
       body: {
         width: 180,
         height: 36
+      }
+    },
+    ports: {
+      groups: PORT_GROUPS
+    }
+  })
+
+  // 注册设备端口节点（端口视觉在组件中绘制，但保留 X6 端口用于连线）
+  register({
+    shape: DEVICE_PORT_NODE,
+    width: 190,
+    height: 120,
+    component: DevicePortNode,
+    effect: ['data'],
+    attrs: {
+      body: {
+        width: 190,
+        height: 120
       }
     },
     ports: {
