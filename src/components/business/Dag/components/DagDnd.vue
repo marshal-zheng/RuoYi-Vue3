@@ -94,7 +94,7 @@
 import { computed, ref, toRef } from 'vue'
 import { Search, Box, Loading, ArrowRight } from '@element-plus/icons-vue'
 import { useDnd } from '../../ZxFlow/composables/useDnd'
-import { DAG_NODE, registerDagShapes } from '../shapes/registerDagShapes'
+import { DAG_NODE, DEVICE_PORT_NODE, registerDagShapes } from '../shapes/registerDagShapes'
 import { useUserOperators } from '../composables/useUserOperators'
 import { generateNodeId, generateContentId } from '../utils/nodeDataUtils'
 import { getNodeSizeByLayout } from '../utils/nodeGeometry.js'
@@ -218,65 +218,290 @@ const handleMouseDown = (event, item) => {
   }
   const id = createNodeId()
   const layoutDirection = props.layout === 'vertical' ? 'vertical' : 'horizontal'
-  const sizeConfig = getNodeSizeByLayout(layoutDirection)
+  
+  // 判断是否为设备节点（有 nodeType 和 ports 字段）
+  // useUserOperators 会把所有字段展平，所以直接从 item 上读取
+  const isDeviceNode = item.nodeType === 'device-port-node' && 
+                       item.ports && 
+                       Array.isArray(item.ports)
 
-  // 根据当前布局动态生成固定 ID 的四向连接桩（t/b/l/r），并按需隐藏
-  const generatePorts = () => {
-    const isHorizontal = layoutDirection === 'horizontal'
-    const make = (pid, group, visible, role) => ({
-      id: pid,
-      group,
-      attrs: {
-        circle: {
-          magnet: visible ? (role === 'output' ? true : 'passive') : false,
-          style: { display: visible ? '' : 'none' }
+  console.log('拖拽节点信息:', {
+    title: item.title,
+    nodeType: item.nodeType,
+    isDeviceNode,
+    ports: item.ports,
+    item
+  })
+
+  // 根据节点类型选择 shape 和尺寸
+  let shape, width, height, ports
+  
+  if (isDeviceNode) {
+    // 设备节点使用 DEVICE_PORT_NODE shape
+    shape = DEVICE_PORT_NODE
+    width = 190
+    height = 120
+    
+    // 构建端口组配置（与 device/detail.vue 保持一致）
+    const portGroups = {
+      top: {
+        position: { name: 'absolute' },
+        markup: [
+          { tagName: 'rect', selector: 'portBody' },
+          { tagName: 'text', selector: 'portLabel' }
+        ],
+        attrs: {
+          portBody: {
+            width: 24,
+            height: 12,
+            x: -12,
+            y: -6,
+            magnet: true,
+            fill: '#fff',
+            strokeWidth: 1,
+            cursor: 'crosshair',
+            rx: 0,
+            ry: 0
+          },
+          portLabel: {
+            text: '',
+            fontSize: 7,
+            fontFamily: 'Arial, sans-serif',
+            fontWeight: 500,
+            fill: '#4b5563',
+            textAnchor: 'middle',
+            textVerticalAnchor: 'middle',
+            x: 0,
+            y: 0,
+            pointerEvents: 'none'
+          }
+        }
+      },
+      bottom: {
+        position: { name: 'absolute' },
+        markup: [
+          { tagName: 'rect', selector: 'portBody' },
+          { tagName: 'text', selector: 'portLabel' }
+        ],
+        attrs: {
+          portBody: {
+            width: 24,
+            height: 12,
+            x: -12,
+            y: -6,
+            magnet: true,
+            fill: '#fff',
+            strokeWidth: 1,
+            cursor: 'crosshair',
+            rx: 0,
+            ry: 0
+          },
+          portLabel: {
+            text: '',
+            fontSize: 7,
+            fontFamily: 'Arial, sans-serif',
+            fontWeight: 500,
+            fill: '#4b5563',
+            textAnchor: 'middle',
+            textVerticalAnchor: 'middle',
+            x: 0,
+            y: 0,
+            pointerEvents: 'none'
+          }
+        }
+      },
+      left: {
+        position: { name: 'absolute' },
+        markup: [
+          { tagName: 'rect', selector: 'portBody' },
+          { tagName: 'text', selector: 'portLabel' }
+        ],
+        attrs: {
+          portBody: {
+            width: 32,
+            height: 12,
+            x: -16,
+            y: -6,
+            magnet: true,
+            fill: '#fff',
+            strokeWidth: 1,
+            cursor: 'crosshair',
+            rx: 0,
+            ry: 0
+          },
+          portLabel: {
+            text: '',
+            fontSize: 7,
+            fontFamily: 'Arial, sans-serif',
+            fontWeight: 500,
+            fill: '#4b5563',
+            textAnchor: 'middle',
+            textVerticalAnchor: 'middle',
+            x: 0,
+            y: 0,
+            pointerEvents: 'none'
+          }
+        }
+      },
+      right: {
+        position: { name: 'absolute' },
+        markup: [
+          { tagName: 'rect', selector: 'portBody' },
+          { tagName: 'text', selector: 'portLabel' }
+        ],
+        attrs: {
+          portBody: {
+            width: 32,
+            height: 12,
+            x: -16,
+            y: -6,
+            magnet: true,
+            fill: '#fff',
+            strokeWidth: 1,
+            cursor: 'crosshair',
+            rx: 0,
+            ry: 0
+          },
+          portLabel: {
+            text: '',
+            fontSize: 7,
+            fontFamily: 'Arial, sans-serif',
+            fontWeight: 500,
+            fill: '#4b5563',
+            textAnchor: 'middle',
+            textVerticalAnchor: 'middle',
+            x: 0,
+            y: 0,
+            pointerEvents: 'none'
+          }
+        }
+      }
+    }
+    
+    // 使用设备的端口信息创建 X6 端口项
+    const portItems = item.ports.map(port => {
+      // 从端口数据中读取颜色（由业务层预先计算好）
+      const portColor = port.color || '#6b7280'  // 默认灰色
+      
+      // 文本截断
+      const isTopBottom = port.group === 'top' || port.group === 'bottom'
+      const portName = port.interfaceName || port.id
+      const displayText = portName.length > (isTopBottom ? 6 : 7) 
+        ? portName.substring(0, isTopBottom ? 5 : 6) + '..' 
+        : portName
+      
+      return {
+        id: port.id,
+        group: port.group,
+        args: { x: 0, y: 0 }, // 初始位置，后续由 syncPortPositions 更新
+        attrs: {
+          portBody: {
+            stroke: portColor  // 根据总线类型设置边框颜色
+          },
+          portLabel: {
+            text: displayText
+          }
         }
       }
     })
-    return [
-      make('t', 'top', !isHorizontal, 'input'),
-      make('b', 'bottom', !isHorizontal, 'output'),
-      make('l', 'left', isHorizontal, 'input'),
-      make('r', 'right', isHorizontal, 'output')
-    ]
+    
+    // 组装完整的端口配置
+    ports = {
+      groups: portGroups,
+      items: portItems
+    }
+  } else {
+    // 普通 DAG 节点
+    shape = DAG_NODE
+    const sizeConfig = getNodeSizeByLayout(layoutDirection)
+    width = sizeConfig.width
+    height = sizeConfig.height
+    
+    // 根据当前布局动态生成固定 ID 的四向连接桩（t/b/l/r），并按需隐藏
+    const generatePorts = () => {
+      const isHorizontal = layoutDirection === 'horizontal'
+      const make = (pid, group, visible, role) => ({
+        id: pid,
+        group,
+        attrs: {
+          circle: {
+            magnet: visible ? (role === 'output' ? true : 'passive') : false,
+            style: { display: visible ? '' : 'none' }
+          }
+        }
+      })
+      return [
+        make('t', 'top', !isHorizontal, 'input'),
+        make('b', 'bottom', !isHorizontal, 'output'),
+        make('l', 'left', isHorizontal, 'input'),
+        make('r', 'right', isHorizontal, 'output')
+      ]
+    }
+    ports = generatePorts()
+  }
+
+  // 构建节点数据
+  const nodeData = {
+    // 新的数据结构
+    type: 'leaf-node', // 新拖入的节点默认为叶子节点
+    layoutDirection,
+    collapsed: false,
+    properties: {
+      content: {
+        id: generateContentId(),
+        label: item.title
+      },
+      weight: 50,
+      otherData: {}, // 空的计算模型数据
+      parentNodeId: null, // 稍后会在连线时更新
+      customType: '',
+      customProperties: '',
+      unit: '',
+      priority: '',
+      defaultValue: '',
+      notes: '',
+      level: 1 // 稍后会根据实际位置更新
+    },
+    // 兼容旧结构
+    id,
+    label: item.title,
+    status: 'default',
+    description: item.shortDesc || item.value,
+    originalData: { name: item.title, value: item.shortDesc }
+  }
+
+  // 如果是设备节点，添加设备特有的数据
+  if (isDeviceNode) {
+    nodeData.deviceId = item.deviceId
+    nodeData.deviceType = item.deviceType
+    nodeData.busType = item.busType
+    nodeData.manufacturer = item.manufacturer
+    nodeData.model = item.model
+    nodeData.version = item.version
+    nodeData.ports = item.ports // 端口信息供 DevicePortNode.vue 使用
+    nodeData.nodeType = 'device-port-node'
+    
+    // 保存完整的原始数据
+    nodeData.originalData = {
+      name: item.name,
+      value: item.value,
+      deviceId: item.deviceId,
+      deviceType: item.deviceType,
+      busType: item.busType,
+      manufacturer: item.manufacturer,
+      model: item.model,
+      version: item.version
+    }
   }
 
   startDrag(
     {
       id,
-      shape: DAG_NODE,
-      width: sizeConfig.width,
-      height: sizeConfig.height,
-      data: {
-        // 新的数据结构
-        type: 'leaf-node', // 新拖入的节点默认为叶子节点
-        layoutDirection,
-        collapsed: false,
-        properties: {
-          content: {
-            id: generateContentId(),
-            label: item.title
-          },
-          weight: 50,
-          otherData: {}, // 空的计算模型数据
-          parentNodeId: null, // 稍后会在连线时更新
-          customType: '',
-          customProperties: '',
-          unit: '',
-          priority: '',
-          defaultValue: '',
-          notes: '',
-          level: 1 // 稍后会根据实际位置更新
-        },
-        // 兼容旧结构
-        id,
-        label: item.title,
-        status: 'default',
-        description: item.shortDesc || item.value,
-        originalData: item.originalData || { name: item.title, value: item.shortDesc }
-      },
-      // 创建时确保只包含标准四向端口
-      ports: generatePorts(),
+      shape,
+      width,
+      height,
+      data: nodeData,
+      ports,
       // 确保节点默认可拖拽和未锁定
       draggable: true,
       locked: false

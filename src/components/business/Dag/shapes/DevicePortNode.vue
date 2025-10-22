@@ -1,235 +1,25 @@
 <template>
-  <div class="device-port-node">
-    <svg width="100%" height="100%" :viewBox="`-35 -10 190 ${viewBoxHeight}`" preserveAspectRatio="xMidYMid meet">
-      <defs>
-        <!-- CPU 连接点渐变 -->
-        <linearGradient id="cpu-connection-gradient" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#4F4F4F" />
-          <stop offset="60%" stop-color="#121214" />
-        </linearGradient>
-        
-        <linearGradient id="port-input-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" style="stop-color:#67c23a;stop-opacity:1" />
-          <stop offset="100%" style="stop-color:#85ce61;stop-opacity:1" />
-        </linearGradient>
-        
-        <linearGradient id="port-output-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" style="stop-color:#e6a23c;stop-opacity:1" />
-          <stop offset="100%" style="stop-color:#f0c78a;stop-opacity:1" />
-        </linearGradient>
-        
-        <linearGradient id="port-bidirectional-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" style="stop-color:#409eff;stop-opacity:1" />
-          <stop offset="100%" style="stop-color:#79bbff;stop-opacity:1" />
-        </linearGradient>
-        
-        <!-- 阴影滤镜 -->
-        <filter id="device-shadow" x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
-          <feOffset dx="2" dy="2" result="offsetblur"/>
-          <feComponentTransfer>
-            <feFuncA type="linear" slope="0.3"/>
-          </feComponentTransfer>
-          <feMerge>
-            <feMergeNode/>
-            <feMergeNode in="SourceGraphic"/>
-          </feMerge>
-        </filter>
-        
-        <filter id="port-glow">
-          <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
-          <feMerge>
-            <feMergeNode in="coloredBlur"/>
-            <feMergeNode in="SourceGraphic"/>
-          </feMerge>
-        </filter>
-      </defs>
-      
-      <!-- 设备主体 - 参考 CPU 样式（竖向） -->
-      <g class="device-body">
-        <!-- 主设备矩形 - 黑色背景（竖向、自适应高度） -->
-        <rect
-          x="25"
-          :y="deviceRectY"
-          width="70"
-          :height="deviceRectHeight"
-          rx="5"
-          fill="#181818"
-          filter="url(#device-shadow)"
-        />
-        
-        <!-- 设备名称文本 - 白色（竖向排列） -->
-        <text
-          x="60"
-          :y="deviceCenterY"
-          text-anchor="middle"
-          fill="white"
-          font-size="14"
-          font-weight="600"
-          letter-spacing="0.5em"
-          writing-mode="tb"
-          glyph-orientation-vertical="0"
-        >
-          {{ label }}
-        </text>
-      </g>
-      
-      <!-- 端口绘制 - 顶部 -->
-      <g v-if="topPorts.length > 0" class="ports-group ports-top">
-        <g
-          v-for="(port, index) in topPorts"
-          :key="port.id"
-          :transform="`translate(${getTopPortX(index, topPorts.length)}, ${topPortY})`"
-          class="port-item"
-          :data-port-id="port.id"
-          @click.stop="handlePortClick(port)"
-          @contextmenu.prevent="handlePortContextMenu(port, $event)"
-        >
-          <!-- 端口背景 -->
-          <rect
-            x="-12"
-            y="0"
-            width="24"
-            height="12"
-            rx="2"
-            :fill="isPortSelected(port.id) ? 'rgba(64, 158, 255, 0.2)' : 'rgba(255,255,255,0.9)'"
-            :stroke="getPortStrokeColor(port)"
-            :stroke-width="isPortSelected(port.id) ? '2' : '1'"
-            :filter="isPortSelected(port.id) ? 'url(#port-glow)' : ''"
-            class="port-bg"
-          />
-          <!-- 端口名称 -->
-          <text
-            x="0"
-            y="6"
-            text-anchor="middle"
-            dominant-baseline="middle"
-            font-size="7"
-            fill="#606266"
-            font-weight="500"
-          >
-            {{ truncateText(port.interfaceName, 6) }}
-          </text>
-        </g>
-      </g>
-
-      <!-- 端口绘制 - 右侧 -->
-      <g v-if="rightPorts.length > 0" class="ports-group ports-right">
-        <g
-          v-for="(port, index) in rightPorts"
-          :key="port.id"
-          :transform="`translate(95, ${getRightPortY(index, rightPorts.length)})`"
-          class="port-item"
-          :data-port-id="port.id"
-          @click.stop="handlePortClick(port)"
-          @contextmenu.prevent="handlePortContextMenu(port, $event)"
-        >
-          <!-- 端口背景 -->
-          <rect
-            x="0"
-            y="-6"
-            width="32"
-            height="12"
-            rx="2"
-            :fill="isPortSelected(port.id) ? 'rgba(64, 158, 255, 0.2)' : 'rgba(255,255,255,0.9)'"
-            :stroke="getPortStrokeColor(port)"
-            :stroke-width="isPortSelected(port.id) ? '2' : '1'"
-            :filter="isPortSelected(port.id) ? 'url(#port-glow)' : ''"
-            class="port-bg"
-          />
-          <!-- 端口名称 -->
-          <text
-            x="16"
-            y="0"
-            text-anchor="middle"
-            dominant-baseline="middle"
-            font-size="7"
-            fill="#606266"
-            font-weight="500"
-          >
-            {{ truncateText(port.interfaceName, 7) }}
-          </text>
-        </g>
-      </g>
-
-      <!-- 端口绘制 - 底部 -->
-      <g v-if="bottomPorts.length > 0" class="ports-group ports-bottom">
-        <g
-          v-for="(port, index) in bottomPorts"
-          :key="port.id"
-          :transform="`translate(${getBottomPortX(index, bottomPorts.length)}, ${bottomPortY})`"
-          class="port-item"
-          :data-port-id="port.id"
-          @click.stop="handlePortClick(port)"
-          @contextmenu.prevent="handlePortContextMenu(port, $event)"
-        >
-          <!-- 端口背景 -->
-          <rect
-            x="-12"
-            y="0"
-            width="24"
-            height="12"
-            rx="2"
-            :fill="isPortSelected(port.id) ? 'rgba(64, 158, 255, 0.2)' : 'rgba(255,255,255,0.9)'"
-            :stroke="getPortStrokeColor(port)"
-            :stroke-width="isPortSelected(port.id) ? '2' : '1'"
-            :filter="isPortSelected(port.id) ? 'url(#port-glow)' : ''"
-            class="port-bg"
-          />
-          <!-- 端口名称 -->
-          <text
-            x="0"
-            y="6"
-            text-anchor="middle"
-            dominant-baseline="middle"
-            font-size="7"
-            fill="#606266"
-            font-weight="500"
-          >
-            {{ truncateText(port.interfaceName, 6) }}
-          </text>
-        </g>
-      </g>
-
-      <!-- 端口绘制 - 左侧 -->
-      <g v-if="leftPorts.length > 0" class="ports-group ports-left">
-        <g
-          v-for="(port, index) in leftPorts"
-          :key="port.id"
-          :transform="`translate(25, ${getLeftPortY(index, leftPorts.length)})`"
-          class="port-item"
-          :data-port-id="port.id"
-          @click.stop="handlePortClick(port)"
-          @contextmenu.prevent="handlePortContextMenu(port, $event)"
-        >
-          <!-- 端口背景 -->
-          <rect
-            x="-32"
-            y="-6"
-            width="32"
-            height="12"
-            rx="2"
-            :fill="isPortSelected(port.id) ? 'rgba(64, 158, 255, 0.2)' : 'rgba(255,255,255,0.9)'"
-            :stroke="getPortStrokeColor(port)"
-            :stroke-width="isPortSelected(port.id) ? '2' : '1'"
-            :filter="isPortSelected(port.id) ? 'url(#port-glow)' : ''"
-            class="port-bg"
-          />
-          <!-- 端口名称 -->
-          <text
-            x="-16"
-            y="0"
-            text-anchor="middle"
-            dominant-baseline="middle"
-            font-size="7"
-            fill="#606266"
-            font-weight="500"
-          >
-            {{ truncateText(port.interfaceName, 7) }}
-          </text>
-        </g>
-      </g>
-    </svg>
+  <div class="device-port-node relative overflow-visible" :style="{ width: containerWidth + 'px', height: containerHeight + 'px' }">
+    <!-- 设备主体 -->
+    <div 
+      class="device-body absolute bg-[#181818] rounded-md shadow-lg"
+      :style="{
+        width: '70px',
+        height: deviceRectHeight + 'px',
+        left: deviceBodyLeft + 'px',
+        top: deviceBodyTop + 'px'
+      }"
+    >
+      <!-- 设备名称 - 竖向文字 -->
+      <div 
+        class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-white text-sm font-semibold whitespace-nowrap"
+        style="writing-mode: vertical-rl; letter-spacing: 0.5em; text-orientation: upright;"
+      >
+        {{ label }}
+      </div>
+    </div>
+    
+    <!-- 注意：端口现在完全由 X6 的连接桩渲染，不再需要 HTML port-item -->
   </div>
 </template>
 
@@ -257,58 +47,64 @@ const nodeData = computed(() => {
 const label = computed(() => nodeData.value.label || '设备')
 const busType = computed(() => nodeData.value.busType || '')
 const ports = computed(() => nodeData.value.ports || [])
-const selectedPortId = computed(() => nodeData.value.selectedPortId || null)
 
-const DEVICE_NODE_WIDTH = 190
+// 尺寸常量
+const DEVICE_WIDTH = 70  // 设备主体宽度
+const SIDE_PORT_WIDTH = 32  // 左右端口宽度
+const TOP_BOTTOM_PORT_HEIGHT = 12  // 上下端口高度
 const BASE_DEVICE_HEIGHT = 80
 const TEXT_FONT_SIZE = 14
 const LETTER_SPACING_EM = 0.5
 const TEXT_LINE_HEIGHT = TEXT_FONT_SIZE + TEXT_FONT_SIZE * LETTER_SPACING_EM
 const CONTENT_VERTICAL_PADDING = 24
-const VIEWBOX_VERTICAL_PADDING = 40
-const DEVICE_RECT_Y_OFFSET = 5
-const TOP_PORT_GAP = 14
-const BOTTOM_PORT_GAP = 10
+const TOP_BOTTOM_MARGIN = 0  // 上下端口紧贴设备主体，无间距
 
 const labelLength = computed(() => Math.max(label.value.length, 1))
 
-// 根据设备名称长度计算设备高度
-const deviceHeight = computed(() => {
-  const textHeight = labelLength.value * TEXT_LINE_HEIGHT
-  return Math.max(BASE_DEVICE_HEIGHT, textHeight + CONTENT_VERTICAL_PADDING)
-})
-
-// SVG viewBox 高度（设备高度 + 上下边距）
-const viewBoxHeight = computed(() => deviceHeight.value + VIEWBOX_VERTICAL_PADDING)
-
-// 设备矩形的 Y 坐标和高度
-const deviceRectY = computed(() => DEVICE_RECT_Y_OFFSET)
-const deviceRectHeight = computed(() => deviceHeight.value)
-
-// 设备中心 Y 坐标（用于文字定位）
-const deviceCenterY = computed(() => deviceRectY.value + deviceRectHeight.value / 2)
-
-// 顶部长连端口的 Y 坐标
-const topPortY = computed(() => deviceRectY.value - TOP_PORT_GAP)
-
-// 底部端口的 Y 坐标
-const bottomPortY = computed(() => deviceRectY.value + deviceRectHeight.value + BOTTOM_PORT_GAP)
-
-// 按位置分组端口
+// 按位置分组端口（需要在容器尺寸计算之前定义）
 const topPorts = computed(() => ports.value.filter(p => p.group === 'top'))
 const rightPorts = computed(() => ports.value.filter(p => p.group === 'right'))
 const bottomPorts = computed(() => ports.value.filter(p => p.group === 'bottom'))
 const leftPorts = computed(() => ports.value.filter(p => p.group === 'left'))
 
-// 判断端口是否选中
-function isPortSelected(portId) {
-  return selectedPortId.value === portId
-}
+// 根据设备名称长度计算设备主体高度
+const deviceRectHeight = computed(() => {
+  const textHeight = labelLength.value * TEXT_LINE_HEIGHT
+  return Math.max(BASE_DEVICE_HEIGHT, textHeight + CONTENT_VERTICAL_PADDING)
+})
 
-// 端口位置计算函数（竖向设备，自适应）
+// 容器尺寸（紧凑布局，刚好包裹设备和端口）
+const containerWidth = computed(() => {
+  const hasLeftPorts = leftPorts.value.length > 0
+  const hasRightPorts = rightPorts.value.length > 0
+  return (hasLeftPorts ? SIDE_PORT_WIDTH : 0) + DEVICE_WIDTH + (hasRightPorts ? SIDE_PORT_WIDTH : 0)
+})
+
+const containerHeight = computed(() => {
+  const hasTopPorts = topPorts.value.length > 0
+  const hasBottomPorts = bottomPorts.value.length > 0
+  return (hasTopPorts ? TOP_BOTTOM_PORT_HEIGHT + TOP_BOTTOM_MARGIN : 0) + 
+         deviceRectHeight.value + 
+         (hasBottomPorts ? TOP_BOTTOM_MARGIN + TOP_BOTTOM_PORT_HEIGHT : 0)
+})
+
+// 设备主体在容器中的位置
+const deviceBodyLeft = computed(() => {
+  return leftPorts.value.length > 0 ? SIDE_PORT_WIDTH : 0
+})
+
+const deviceBodyTop = computed(() => {
+  return topPorts.value.length > 0 ? TOP_BOTTOM_PORT_HEIGHT + TOP_BOTTOM_MARGIN : 0
+})
+
+// 设备中心 Y 坐标（用于左右端口定位）
+const deviceCenterY = computed(() => deviceBodyTop.value + deviceRectHeight.value / 2)
+
+// 端口位置计算函数（用于同步 X6 连接桩位置）
 function getTopPortX(index, total) {
   const spacing = 25
-  const startX = 60 - ((total - 1) * spacing) / 2
+  const deviceCenterX = deviceBodyLeft.value + DEVICE_WIDTH / 2
+  const startX = deviceCenterX - ((total - 1) * spacing) / 2
   return startX + index * spacing
 }
 
@@ -321,7 +117,8 @@ function getRightPortY(index, total) {
 
 function getBottomPortX(index, total) {
   const spacing = 25
-  const startX = 60 - ((total - 1) * spacing) / 2
+  const deviceCenterX = deviceBodyLeft.value + DEVICE_WIDTH / 2
+  const startX = deviceCenterX - ((total - 1) * spacing) / 2
   return startX + index * spacing
 }
 
@@ -332,89 +129,94 @@ function getLeftPortY(index, total) {
   return startY + index * spacing
 }
 
-// 根据视图高度同步 X6 节点尺寸，确保点击与选中区域一致
+// 根据实际内容同步 X6 节点尺寸
 const syncNodeSize = () => {
   if (!props.node || typeof props.node.getSize !== 'function' || typeof props.node.resize !== 'function') {
     return
   }
   const currentSize = props.node.getSize()
-  const targetWidth = DEVICE_NODE_WIDTH
-  const targetHeight = Math.max(viewBoxHeight.value, BASE_DEVICE_HEIGHT + VIEWBOX_VERTICAL_PADDING)
+  const targetWidth = containerWidth.value
+  const targetHeight = containerHeight.value
   if (!currentSize || currentSize.width !== targetWidth || currentSize.height !== targetHeight) {
     props.node.resize(targetWidth, targetHeight)
   }
 }
 
+// 同步 X6 端口位置，使其与视觉端口对齐
+const syncPortPositions = () => {
+  if (!props.node || typeof props.node.setPortProp !== 'function') {
+    return
+  }
+
+  const allPorts = ports.value || []
+  
+  allPorts.forEach((port, index) => {
+    const group = port.group
+    let x, y
+    
+    // 根据端口组计算位置（相对于节点的坐标）
+    // 注意：端口矩形在 X6 中是中心对齐的，所以需要调整 y 坐标让端口紧贴设备
+    if (group === 'top') {
+      const portIndex = topPorts.value.findIndex(p => p.id === port.id)
+      if (portIndex >= 0) {
+        x = getTopPortX(portIndex, topPorts.value.length)
+        y = TOP_BOTTOM_PORT_HEIGHT / 2  // 端口中心在半高处，矩形从 0 到 12，紧贴设备顶部
+      }
+    } else if (group === 'bottom') {
+      const portIndex = bottomPorts.value.findIndex(p => p.id === port.id)
+      if (portIndex >= 0) {
+        x = getBottomPortX(portIndex, bottomPorts.value.length)
+        y = containerHeight.value - TOP_BOTTOM_PORT_HEIGHT / 2  // 端口中心在底部往上半高，紧贴设备底部
+      }
+    } else if (group === 'left') {
+      const portIndex = leftPorts.value.findIndex(p => p.id === port.id)
+      if (portIndex >= 0) {
+        x = SIDE_PORT_WIDTH / 2  // 端口中心在半宽处，紧贴设备左侧
+        y = getLeftPortY(portIndex, leftPorts.value.length)
+      }
+    } else if (group === 'right') {
+      const portIndex = rightPorts.value.findIndex(p => p.id === port.id)
+      if (portIndex >= 0) {
+        x = containerWidth.value - SIDE_PORT_WIDTH / 2  // 端口中心在右边往左半宽，紧贴设备右侧
+        y = getRightPortY(portIndex, rightPorts.value.length)
+      }
+    }
+    
+    if (x !== undefined && y !== undefined) {
+      // 使用绝对定位更新端口位置
+      props.node.setPortProp(port.id, 'args', { x, y })
+      props.node.setPortProp(port.id, ['position', 'name'], 'absolute')
+    }
+  })
+}
+
 watch(
-  [() => props.node, () => viewBoxHeight.value],
+  [() => props.node, () => containerWidth.value, () => containerHeight.value, () => ports.value],
   () => {
     syncNodeSize()
+    // 延迟一帧执行端口同步，确保尺寸先更新
+    setTimeout(() => {
+      syncPortPositions()
+    }, 0)
   },
-  { immediate: true }
+  { immediate: true, deep: true }
 )
 
 onMounted(() => {
   syncNodeSize()
+  // 初始延迟
+  setTimeout(() => {
+    syncPortPositions()
+  }, 100)
+  
+  // 额外的延迟同步，确保拖拽创建的节点也能正确同步
+  setTimeout(() => {
+    syncPortPositions()
+  }, 300)
 })
 
-// 获取端口颜色
-function getPortColor(port) {
-  const colorMap = {
-    input: '#67c23a',
-    output: '#e6a23c',
-    bidirectional: '#409eff'
-  }
-  return colorMap[port.interfaceType] || '#909399'
-}
-
-// 获取端口边框颜色
-function getPortStrokeColor(port) {
-  if (isPortSelected(port.id)) {
-    return '#409eff'
-  }
-  const colorMap = {
-    input: '#85ce61',
-    output: '#f0c78a',
-    bidirectional: '#79bbff'
-  }
-  return colorMap[port.interfaceType] || '#d9d9d9'
-}
-
-// 文本截断
-function truncateText(text, maxLength) {
-  if (!text) return ''
-  if (text.length <= maxLength) return text
-  return text.substring(0, maxLength - 2) + '..'
-}
-
-// 获取端口提示信息
-function getPortTooltip(port) {
-  const typeMap = {
-    input: '输入端口',
-    output: '输出端口',
-    bidirectional: '双向端口'
-  }
-  const typeText = typeMap[port.interfaceType] || '未知类型'
-  return `${port.interfaceName} (${typeText})\n${port.description || '无描述'}`
-}
-
-// 端口点击处理（由父组件处理）
-function handlePortClick(port) {
-  // 这个事件会冒泡到节点的点击事件
-  console.log('Port clicked:', port)
-}
-
-// 端口右键菜单
-function handlePortContextMenu(port, event) {
-  // 触发自定义事件，由 detail.vue 处理
-  if (props.node && props.node.model && props.node.model.graph) {
-    props.node.model.graph.trigger('port:contextmenu', {
-      port,
-      node: props.node,
-      e: event
-    })
-  }
-}
+// 注意：端口交互现在完全由 X6 的连接桩处理
+// 所有端口的点击、右键菜单等事件都在 detail.vue 中通过 X6 事件系统处理
 
 // 监听节点数据变化
 watch(
@@ -435,35 +237,9 @@ if (props.node) {
 
 <style lang="scss" scoped>
 .device-port-node {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: visible;
-
-  svg {
-    overflow: visible;
-  }
-
-  // 端口交互样式
-  :deep(.port-item) {
-    cursor: pointer;
-    transition: all 0.2s ease;
-
-    &:hover .port-bg {
-      filter: url(#port-glow);
-      stroke-width: 2;
-    }
-
-    .port-bg {
-      transition: all 0.2s ease;
-    }
-
-    text {
-      pointer-events: none;
-      user-select: none;
-    }
+  // 设备主体样式
+  .device-body {
+    pointer-events: all;
   }
 }
 
@@ -486,16 +262,39 @@ if (props.node) {
   pointer-events: none !important;
 }
 
-// 隐藏 X6 的连接桩圆圈
-:global(.x6-port) {
-  display: none !important;
-  visibility: hidden !important;
-  opacity: 0 !important;
+// X6 连接桩样式（矩形 + 文本标签）
+:global(.x6-port-body) {
+  cursor: crosshair !important;
+  transition: all 0.2s ease-in-out;
+  
+  // 悬停效果 - 保持原有颜色，增加阴影和边框宽度
+  &:hover {
+    stroke-width: 2 !important;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
+  }
 }
 
-:global(.x6-port-body) {
-  display: none !important;
-  visibility: hidden !important;
-  opacity: 0 !important;
+// 连接桩文本标签
+:global(.x6-port text) {
+  pointer-events: none;
+  user-select: none;
+}
+
+// 连接模式时高亮所有可用端口（保持原有颜色）
+:global(.x6-graph.connecting) {
+  .x6-port-body {
+    stroke-width: 2 !important;
+    animation: port-pulse 1.5s ease-in-out infinite;
+    filter: drop-shadow(0 2px 6px currentColor);
+  }
+}
+
+@keyframes port-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }
 </style>

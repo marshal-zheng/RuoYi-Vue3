@@ -993,7 +993,8 @@ defineExpose({
 
 /* 端口连接点控制 */
 .zx-dag-page {
-  .x6-port-body {
+  /* 普通 DAG 节点的连接桩默认隐藏 */
+  .x6-node[data-shape='dag-node'] .x6-port-body {
     opacity: 0;
     transition: opacity 0.2s ease-in-out;
 
@@ -1008,6 +1009,11 @@ defineExpose({
       fill: #52c41a !important;
       stroke: #52c41a !important;
     }
+  }
+  
+  /* 设备节点的连接桩始终可见 */
+  .x6-node[data-shape='device-port-node'] .x6-port-body {
+    opacity: 1 !important;
   }
 
   /* 连接模式时显示所有端口 */

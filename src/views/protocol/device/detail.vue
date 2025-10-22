@@ -33,6 +33,8 @@
             <XFlowGraph
               ref="graphRef"
               :readonly="false"
+              :connection-options="connectionOptions"
+              :connection-edge-options="connectionEdgeOptions"
               :custom-menu-handler="customMenuHandler"
               @ready="onGraphReady"
               @node:click="onNodeClick"
@@ -53,34 +55,19 @@
       >
         <el-form ref="portFormRef" :model="portForm" :rules="portFormRules" label-width="100px">
           <el-form-item label="总线类型" prop="interfaceType">
-            <el-select 
-              v-model="portForm.interfaceType" 
-              placeholder="请选择总线类型" 
-              style="width: 100%"
+            <InterfaceTypeSelector
+              v-model="portForm.interfaceType"
               @change="handleBusTypeChange"
-            >
-              <el-option label="RS422" value="RS422" />
-              <el-option label="RS485" value="RS485" />
-              <el-option label="CAN" value="CAN" />
-              <el-option label="LAN" value="LAN" />
-              <el-option label="1553B" value="1553B" />
-            </el-select>
+            />
           </el-form-item>
           <el-form-item label="端口名称" prop="interfaceName">
             <el-input v-model="portForm.interfaceName" placeholder="请输入端口名称" />
           </el-form-item>
           <el-form-item label="端口位置" prop="position">
-            <el-select 
-              v-model="portForm.position" 
-              placeholder="请选择端口位置" 
-              style="width: 100%"
+            <PositionSelector
+              v-model="portForm.position"
               @change="handlePositionChange"
-            >
-              <el-option label="顶部" value="top" />
-              <el-option label="右侧" value="right" />
-              <el-option label="底部" value="bottom" />
-              <el-option label="左侧" value="left" />
-            </el-select>
+            />
           </el-form-item>
           <el-form-item label="端口描述" prop="description">
             <el-input
@@ -128,11 +115,44 @@ import { useRouter, useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import ContentWrap from '@/components/ContentWrap/src/ContentWrap.vue'
 import { XFlow, XFlowGraph, XFlowGrid } from '@/components/business/ZxFlow'
-import { registerDagShapes } from '@/components/business/Dag/shapes/registerDagShapes'
+import { registerDagShapes, DAG_EDGE, DAG_CONNECTOR } from '@/components/business/Dag/shapes/registerDagShapes'
 import { getDevice } from '@/api/protocol/device'
+import { InterfaceTypeSelector, PositionSelector } from '@/views/protocol/components/selector'
 
 // 注册自定义形状
 registerDagShapes()
+
+// 连线配置
+const connectionOptions = {
+  snap: true,
+  allowBlank: false,
+  allowLoop: false,
+  highlight: true,
+  connectionPoint: 'anchor',
+  anchor: 'center',
+  connector: DAG_CONNECTOR,
+  validateConnection({ sourceMagnet, targetMagnet }) {
+    // 允许所有端口之间的连接
+    return !!(sourceMagnet && targetMagnet)
+  }
+}
+
+const connectionEdgeOptions = {
+  shape: DAG_EDGE,
+  animated: false,
+  zIndex: -1,
+  attrs: {
+    line: {
+      stroke: '#C2C8D5',
+      strokeWidth: 2,
+      targetMarker: {
+        name: 'block',
+        width: 8,
+        height: 6
+      }
+    }
+  }
+}
 
 const router = useRouter()
 const route = useRoute()
@@ -228,8 +248,8 @@ async function loadDevicePorts() {
 function updateGraphData() {
   if (!graphInstance.value) return
 
-  // 构建设备节点的端口列表
-  const ports = devicePorts.value.map((port, index) => ({
+  // 构建设备节点的端口列表（用于视觉显示）
+  const portsData = devicePorts.value.map((port, index) => ({
     id: port.id || `port_${index}`,
     group: port.position || 'right',
     interfaceId: port.interfaceId || port.id,
@@ -238,10 +258,184 @@ function updateGraphData() {
     description: port.description
   }))
 
+  // 定义端口组配置（与 DagDnd.vue 保持一致）
+  const portGroups = {
+    top: {
+      position: { name: 'absolute' },
+      markup: [
+        { tagName: 'rect', selector: 'portBody' },
+        { tagName: 'text', selector: 'portLabel' }
+      ],
+      attrs: {
+        portBody: {
+          width: 16,
+          height: 12,
+          x: -8,
+          y: -6,
+          magnet: true,
+          fill: '#fff',
+          strokeWidth: 1,
+          cursor: 'crosshair',
+          rx: 0,
+          ry: 0
+        },
+        portLabel: {
+          text: '',
+          fontSize: 7,
+          fontFamily: 'Arial, sans-serif',
+          fontWeight: 500,
+          fill: '#4b5563',
+          textAnchor: 'middle',
+          textVerticalAnchor: 'middle',
+          x: 0,
+          y: 0,
+          pointerEvents: 'none'
+        }
+      }
+    },
+    bottom: {
+      position: { name: 'absolute' },
+      markup: [
+        { tagName: 'rect', selector: 'portBody' },
+        { tagName: 'text', selector: 'portLabel' }
+      ],
+      attrs: {
+        portBody: {
+          width: 16,
+          height: 12,
+          x: -8,
+          y: -6,
+          magnet: true,
+          fill: '#fff',
+          strokeWidth: 1,
+          cursor: 'crosshair',
+          rx: 0,
+          ry: 0
+        },
+        portLabel: {
+          text: '',
+          fontSize: 7,
+          fontFamily: 'Arial, sans-serif',
+          fontWeight: 500,
+          fill: '#4b5563',
+          textAnchor: 'middle',
+          textVerticalAnchor: 'middle',
+          x: 0,
+          y: 0,
+          pointerEvents: 'none'
+        }
+      }
+    },
+    left: {
+      position: { name: 'absolute' },
+      markup: [
+        { tagName: 'rect', selector: 'portBody' },
+        { tagName: 'text', selector: 'portLabel' }
+      ],
+      attrs: {
+        portBody: {
+          width: 32,
+          height: 12,
+          x: -16,
+          y: -6,
+          magnet: true,
+          fill: '#fff',
+          strokeWidth: 1,
+          cursor: 'crosshair',
+          rx: 0,
+          ry: 0
+        },
+        portLabel: {
+          text: '',
+          fontSize: 7,
+          fontFamily: 'Arial, sans-serif',
+          fontWeight: 500,
+          fill: '#4b5563',
+          textAnchor: 'middle',
+          textVerticalAnchor: 'middle',
+          x: 0,
+          y: 0,
+          pointerEvents: 'none'
+        }
+      }
+    },
+    right: {
+      position: { name: 'absolute' },
+      markup: [
+        { tagName: 'rect', selector: 'portBody' },
+        { tagName: 'text', selector: 'portLabel' }
+      ],
+      attrs: {
+        portBody: {
+          width: 32,
+          height: 12,
+          x: -16,
+          y: -6,
+          magnet: true,
+          fill: '#fff',
+          strokeWidth: 1,
+          cursor: 'crosshair',
+          rx: 0,
+          ry: 0
+        },
+        portLabel: {
+          text: '',
+          fontSize: 7,
+          fontFamily: 'Arial, sans-serif',
+          fontWeight: 500,
+          fill: '#4b5563',
+          textAnchor: 'middle',
+          textVerticalAnchor: 'middle',
+          x: 0,
+          y: 0,
+          pointerEvents: 'none'
+        }
+      }
+    }
+  }
+  
+  // 构建 X6 端口配置（用于连接桩）
+  const x6Ports = devicePorts.value.map((port, index) => {
+    const portId = port.id || `port_${index}`
+    const group = port.position || 'right'
+    const busType = port.interfaceType || 'RS422'
+    
+    // 根据总线类型确定颜色
+    const colorMap = {
+      'RS422': '#f59e0b',
+      'RS485': '#f97316',
+      'CAN': '#3b82f6',
+      'LAN': '#10b981',
+      '1553B': '#8b5cf6'
+    }
+    const color = colorMap[busType] || '#6b7280'
+    
+    // 文本截断
+    const isTopBottom = group === 'top' || group === 'bottom'
+    const portName = port.interfaceName || port.id
+    const displayText = portName.length > (isTopBottom ? 6 : 7) 
+      ? portName.substring(0, isTopBottom ? 5 : 6) + '..' 
+      : portName
+    
+    return {
+      id: portId,
+      group: group,
+      args: { x: 0, y: 0 }, // 初始位置，后续由 syncPortPositions 更新
+      attrs: {
+        portBody: {
+          stroke: color  // 根据总线类型设置边框颜色
+        },
+        portLabel: {
+          text: displayText
+        }
+      }
+    }
+  })
+
   // 清除现有节点
   graphInstance.value.clearCells()
 
-  // 创建设备节点（即使没有数据也显示默认节点）
+  // 创建设备节点
   const deviceNode = graphInstance.value.addNode({
     id: 'device_node',
     shape: 'device-port-node',
@@ -254,10 +448,13 @@ function updateGraphData() {
       label: deviceInfo.value.deviceName || '设备',
       deviceId: deviceInfo.value.deviceId || null,
       busType: deviceInfo.value.busType || '',
-      ports: ports,
+      ports: portsData,
       selectedPortId: selectedPortId.value
+    },
+    ports: {
+      groups: portGroups,
+      items: x6Ports
     }
-    // 不添加 ports 属性，避免显示 X6 的连接桩圆圈
   })
 
   // 自动调整视图，让节点可见
