@@ -451,19 +451,6 @@ function customMenuHandler(standardItems, type, target) {
         label: '添加右侧端口',
         icon: 'Plus',
         action: () => handleAddPortWithPosition('right')
-      },
-      { type: 'divider' },
-      {
-        id: 'add-top-port',
-        label: '添加顶部端口',
-        icon: 'Plus',
-        action: () => handleAddPortWithPosition('top')
-      },
-      {
-        id: 'add-bottom-port',
-        label: '添加底部端口',
-        icon: 'Plus',
-        action: () => handleAddPortWithPosition('bottom')
       }
     ]
   }

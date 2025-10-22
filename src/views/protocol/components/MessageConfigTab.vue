@@ -2,6 +2,7 @@
   <div class="message-config-tab">
     <!-- 工具栏 -->
     <div class="table-toolbar">
+      <el-button type="primary" icon="Upload" size="small" @click="handleImport">导入文件</el-button>
       <el-button type="primary" icon="Plus" size="small" @click="handleAddField">添加字段</el-button>
       <el-button type="danger" icon="Delete" size="small" @click="handleDeleteSelected">删除选中</el-button>
     </div>
@@ -157,15 +158,6 @@
             <el-button
               v-if="slotProps?.row"
               link
-              type="primary"
-              size="small"
-              @click="handleAddChild(slotProps.row)"
-            >
-              添加子项
-            </el-button>
-            <el-button
-              v-if="slotProps?.row"
-              link
               type="danger"
               size="small"
               @click="handleDelete(slotProps.row)"
@@ -176,12 +168,19 @@
         </vxe-column>
       </vxe-table>
     </div>
+
+    <!-- 导入文件对话框 -->
+    <ImportFileDialog
+      v-model="importDialogVisible"
+      @confirm="handleImportConfirm"
+    />
   </div>
 </template>
 
 <script setup name="MessageConfigTab">
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { ImportFileDialog } from './index'
 
 const props = defineProps({
   portInfo: {
@@ -194,6 +193,9 @@ const emit = defineEmits(['update:modelValue'])
 
 // 表格引用
 const tableRef = ref()
+
+// 导入对话框显示状态
+const importDialogVisible = ref(false)
 
 // 报文头信息
 const messageHeader = reactive({
@@ -390,6 +392,29 @@ function getDataTypeTagType(dataType) {
     'STRING': ''
   }
   return typeMap[dataType] || ''
+}
+
+// 打开导入对话框
+function handleImport() {
+  importDialogVisible.value = true
+}
+
+// 处理导入确认
+function handleImportConfirm(data) {
+  if (data.fields && data.fields.length > 0) {
+    // 替换当前字段数据
+    messageFields.value = data.fields.map(field => ({
+      ...field,
+      id: field.id || Date.now().toString() + Math.random(),
+      parentId: field.parentId || null
+    }))
+    ElMessage.success(`成功导入 ${data.fields.length} 个字段`)
+  }
+  
+  // 如果有表头信息，也更新表头
+  if (data.header) {
+    Object.assign(messageHeader, data.header)
+  }
 }
 
 // 添加字段

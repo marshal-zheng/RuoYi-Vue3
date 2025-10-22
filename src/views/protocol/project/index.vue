@@ -102,6 +102,7 @@
          <el-table-column label="操作" align="center" width="200" class-name="small-padding fixed-width">
             <template #default="scope">
                <el-button link type="primary" icon="View" @click="handleDetailPage(scope.row)" v-hasPermi="['protocol:project:query']">编辑</el-button>
+               <el-button link type="primary" icon="Download" @click="handleExportDialog(scope.row)" v-hasPermi="['protocol:project:query']">导出</el-button>
                <el-button link type="primary" icon="Delete" @click="handleDelete(scope.row)" v-hasPermi="['protocol:project:remove']">删除</el-button>
             </template>
          </el-table-column>
@@ -132,12 +133,20 @@
             </div>
          </template>
       </el-dialog>
+
+      <!-- 导出弹框 -->
+      <ExportDialog
+         v-model="exportDialogVisible"
+         :project-data="currentExportProject"
+         @export="handleProjectExport"
+      />
    </ContentWrap>
 </template>
 
 <script setup name="Project">
 import { listProject, getProject, delProject, addProject, updateProject, exportProject } from "@/api/protocol/project"
 import ContentWrap from "@/components/ContentWrap/src/ContentWrap.vue"
+import { ExportDialog } from "../components"
 
 const { proxy } = getCurrentInstance()
 const router = useRouter()
@@ -152,6 +161,10 @@ const multiple = ref(true)
 const total = ref(0)
 const title = ref("")
 const dateRange = ref([])
+
+// 导出弹框相关
+const exportDialogVisible = ref(false)
+const currentExportProject = ref({})
 
 const data = reactive({
   form: {},
@@ -426,6 +439,33 @@ function handleAddProject() {
 function handleDetailPage(row) {
   // 跳转到项目详情页面，用于管理项目配置
   proxy.$router.push('/protocol/project-detail/index/' + row.projectId)
+}
+
+/** 打开导出弹框 */
+function handleExportDialog(row) {
+  currentExportProject.value = row
+  exportDialogVisible.value = true
+}
+
+/** 处理项目导出 */
+function handleProjectExport(exportParams) {
+  console.log('导出参数:', exportParams)
+  
+  try {
+    // 根据文件类型构造下载文件名
+    const fileName = `${exportParams.fileName}.${exportParams.fileType}`
+    
+    // 调用下载接口
+    proxy.download("protocol/project/export", {
+      ...exportParams,
+      ...queryParams.value
+    }, fileName)
+    
+    proxy.$modal.msgSuccess(`${fileName} 导出成功！`)
+  } catch (error) {
+    console.warn('导出项目失败:', error)
+    proxy.$modal.msgError("导出失败，接口暂不可用")
+  }
 }
 
 getList()
