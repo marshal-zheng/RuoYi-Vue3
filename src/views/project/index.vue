@@ -90,11 +90,11 @@
           <template #header>
             <div class="flex items-center justify-between">
               <div class="flex items-center space-x-3">
-                <!-- <el-checkbox 
+                <el-checkbox 
                   :model-value="ids.includes(project.projectId)"
                   @change="toggleSelection(project)"
                   @click.stop
-                /> -->
+                />
                 <div>
                   <h3 class="text-lg font-semibold text-gray-800 truncate">
                     <router-link 
@@ -310,7 +310,7 @@ function getList() {
   
   try {
     listProject(proxy.addDateRange(queryParams.value, dateRange.value)).then(response => {
-      projectList.value = mockData.rows
+      projectList.value = response.rows
       total.value = response.total
       loading.value = false
     }).catch(error => {

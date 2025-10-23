@@ -159,7 +159,7 @@ function getList() {
   
   try {
     listDeviceClazz(proxy.addDateRange(queryParams.value, dateRange.value)).then(response => {
-      categoryList.value = mockData.rows
+      categoryList.value = response.rows
       total.value = response.total
       loading.value = false
     }).catch(error => {
