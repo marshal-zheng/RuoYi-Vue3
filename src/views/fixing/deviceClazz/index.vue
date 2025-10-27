@@ -1,125 +1,128 @@
 <template>
-   <ContentWrap>
-      <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" label-width="68px">
-         <el-form-item label="分类名称" prop="name">
-            <el-input
-               v-model="queryParams.name"
-               placeholder="请输入分类名称"
-               clearable
-               @keyup.enter="handleQuery"
-            />
-         </el-form-item>
-         <el-form-item label="创建时间" style="width: 308px">
+  <ZxContentWrap title="设备分类">
+    <ZxGridList
+      ref="gridListRef"
+      :load-data="loadDeviceClazzData"
+      :show-pagination="true"
+      :page-sizes="[10, 20, 50, 100]"
+      :default-page-size="10"
+      :load-on-mounted="true"
+      :clear-selection-on-load="true"
+      class="device-clazz-grid zx-grid-list--page"
+    >
+      <!-- 工具栏：左-操作 | 中-筛选 | 右-搜索 -->
+      <template #form="{ query, loading, refresh: handleRefresh, updateState }">
+        <div class="zx-grid-form-bar">
+          <div class="zx-grid-form-bar__left">
+            <ZxButton 
+              type="primary" 
+              @click="handleAdd"
+              v-hasPermi="['protocol:deviceClazz:add']"
+            >新增</ZxButton>
+            <ZxButton 
+              type="danger" 
+              :disabled="multiple"
+              @click="handleDelete"
+              v-hasPermi="['protocol:deviceClazz:remove']"
+            >删除</ZxButton>
+          </div>
+          <div class="zx-grid-form-bar__filters">
             <el-date-picker
-               v-model="dateRange"
-               value-format="YYYY-MM-DD"
-               type="daterange"
-               range-separator="-"
-               start-placeholder="开始日期"
-               end-placeholder="结束日期"
+              v-model="query.dateRange"
+              value-format="YYYY-MM-DD"
+              type="daterange"
+              range-separator="-"
+              start-placeholder="开始日期"
+              end-placeholder="结束日期"
+              style="width: 240px"
+              @change="(v) => onFilterChange('dateRange', v, { handleRefresh, updateState })"
             ></el-date-picker>
-         </el-form-item>
-         <el-form-item>
-            <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
-            <el-button icon="Refresh" @click="resetQuery">重置</el-button>
-         </el-form-item>
-      </el-form>
+          </div>
+          <div class="zx-grid-form-bar__right">
+            <ZxSearch
+              v-model="query.name"
+              placeholder="搜索分类名称"
+              :loading="loading"
+              search-mode="click"
+              @search="() => onSearch({ handleRefresh, updateState })"
+              @clear="() => onSearch({ handleRefresh, updateState })"
+            />
+          </div>
+        </div>
+      </template>
 
-      <el-row :gutter="10" class="mb8">
-         <el-col :span="1.5">
-            <el-button
-               type="primary"
-               plain
-               icon="Plus"
-               @click="handleAdd"
-               v-hasPermi="['protocol:deviceClazz:add']"
-            >新增</el-button>
-         </el-col>
-         <el-col :span="1.5">
-            <el-button
-               type="danger"
-               plain
-               icon="Delete"
-               :disabled="multiple"
-               @click="handleDelete"
-               v-hasPermi="['protocol:deviceClazz:remove']"
-            >删除</el-button>
-         </el-col>
-         <right-toolbar v-model:showSearch="showSearch" @queryTable="getList"></right-toolbar>
-      </el-row>
-
-      <el-table v-loading="loading" :data="categoryList" @selection-change="handleSelectionChange">
-         <el-table-column type="selection" width="55" align="center" />
-         <el-table-column label="分类编号" align="center" prop="deviceClazzId" width="100" />
-         <el-table-column label="分类名称" align="center" prop="name" :show-overflow-tooltip="true" />
-         <el-table-column label="分类描述" align="center" prop="descr" :show-overflow-tooltip="true" />
-         <el-table-column label="状态" align="center" prop="status" width="80">
+      <!-- 表格内容 -->
+      <template #table="{ grid, refresh: handleRefresh }">
+        <el-table :data="grid.list" style="width: 100%" @selection-change="handleSelectionChange">
+          <el-table-column type="selection" width="55" align="center" />
+          <el-table-column label="分类编号" align="center" prop="deviceClazzId" width="100" />
+          <el-table-column label="分类名称" align="center" prop="name" :show-overflow-tooltip="true" />
+          <el-table-column label="分类描述" align="center" prop="descr" :show-overflow-tooltip="true" />
+          <el-table-column label="状态" align="center" prop="status" width="80">
             <template #default="scope">
-               <dict-tag :options="sys_normal_disable" :value="scope.row.status"/>
+              <dict-tag :options="sys_normal_disable" :value="scope.row.status"/>
             </template>
-         </el-table-column>
-         <el-table-column label="创建人" align="center" prop="createBy" :show-overflow-tooltip="true"/>
-         <el-table-column label="创建时间" align="center" prop="createTime" width="180">
+          </el-table-column>
+          <el-table-column label="创建人" align="center" prop="createBy" :show-overflow-tooltip="true"/>
+          <el-table-column label="创建时间" align="center" prop="createTime" width="180">
             <template #default="scope">
-               <span>{{ parseTime(scope.row.createTime) }}</span>
+              <span>{{ parseTime(scope.row.createTime) }}</span>
             </template>
-         </el-table-column>
-         <el-table-column label="操作" align="center" width="160" class-name="small-padding fixed-width">
+          </el-table-column>
+          <el-table-column 
+            label="操作" 
+            width="200"
+            class-name="op-col"
+            label-class-name="op-col__header"
+          >
             <template #default="scope">
-               <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="['protocol:deviceClazz:edit']">修改</el-button>
-               <el-button link type="danger" icon="Delete" @click="handleDelete(scope.row)" v-hasPermi="['protocol:deviceClazz:remove']">删除</el-button>
+              <div class="op-col__wrap">
+                <ZxButton 
+                  link 
+                  type="primary" 
+                  @click="handleUpdate(scope.row)" 
+                  v-hasPermi="['protocol:deviceClazz:edit']"
+                >修改</ZxButton>
+                <ZxButton 
+                  link 
+                  type="danger" 
+                  @click="handleDelete(scope.row)" 
+                  v-hasPermi="['protocol:deviceClazz:remove']"
+                >删除</ZxButton>
+              </div>
             </template>
-         </el-table-column>
-      </el-table>
+          </el-table-column>
+        </el-table>
+      </template>
+    </ZxGridList>
 
-      <pagination
-         v-show="total > 0"
-         :total="total"
-         v-model:page="queryParams.pageNum"
-         v-model:limit="queryParams.pageSize"
-         @pagination="getList"
-      />
-
-      <!-- 设备分类弹框组件 -->
-      <DeviceClazzDialog 
-         ref="deviceClazzDialogRef"
-         @success="getList"
-      />
-   </ContentWrap>
+    <!-- 设备分类弹框组件 -->
+    <DeviceClazzDialog 
+      ref="deviceClazzDialogRef"
+      @success="handleFormSuccess"
+    />
+  </ZxContentWrap>
 </template>
 
 <script setup name="DeviceClazz">
+import { ref, nextTick } from 'vue'
 import { listDeviceClazz, getDeviceClazz, delDeviceClazz, exportDeviceClazz } from "@/api/fixing/deviceClazz"
-import ContentWrap from "@/components/ContentWrap/src/ContentWrap.vue"
 import DeviceClazzDialog from "@/views/fixing/components/DeviceClazzDialog.vue"
 
 const { proxy } = getCurrentInstance()
 const { sys_normal_disable } = proxy.useDict('sys_normal_disable')
 
-const categoryList = ref([])
-const loading = ref(true)
-const showSearch = ref(true)
+// 组件引用
+const gridListRef = ref()
+const deviceClazzDialogRef = ref()
+
+// 状态管理
 const ids = ref([])
 const single = ref(true)
 const multiple = ref(true)
-const total = ref(0)
-const dateRange = ref([])
-const deviceClazzDialogRef = ref()
 
-const data = reactive({
-  queryParams: {
-    pageNum: 1,
-    pageSize: 10,
-    name: null
-  }
-})
-
-const { queryParams } = toRefs(data)
-
-/** 查询设备分类列表 */
-function getList() {
-  loading.value = true
-  
+// 数据加载函数 - 适配 ZxGridList
+const loadDeviceClazzData = async (params) => {
   // 模拟数据
   const mockData = {
     rows: [
@@ -158,42 +161,53 @@ function getList() {
   }
   
   try {
-    listDeviceClazz(proxy.addDateRange(queryParams.value, dateRange.value)).then(response => {
-      categoryList.value = response.rows
-      total.value = response.total
-      loading.value = false
-    }).catch(error => {
-      console.warn('API调用失败，使用模拟数据:', error)
-      // 使用模拟数据
-      categoryList.value = mockData.rows
-      total.value = mockData.total
-      loading.value = false
-    })
+    // 构建查询参数，包含日期范围
+    const queryParams = { ...params }
+    if (params.dateRange && params.dateRange.length === 2) {
+      queryParams.beginTime = params.dateRange[0]
+      queryParams.endTime = params.dateRange[1]
+      delete queryParams.dateRange
+    }
+    
+    const response = await listDeviceClazz(queryParams)
+    return response
   } catch (error) {
-    console.warn('API调用异常，使用模拟数据:', error)
+    console.warn('API调用失败，使用模拟数据:', error)
     // 使用模拟数据
-    categoryList.value = mockData.rows
-    total.value = mockData.total
-    loading.value = false
+    return mockData
   }
 }
 
-/** 搜索按钮操作 */
-function handleQuery() {
-  queryParams.value.pageNum = 1
-  getList()
+// 筛选和搜索处理
+const onFilterChange = (field, value, { handleRefresh, updateState }) => {
+  updateState('pager.page', 1)
+
+  // 使用 nextTick 确保状态更新后再刷新
+  nextTick(() => {
+    handleRefresh()
+  })
 }
 
-/** 重置按钮操作 */
-function resetQuery() {
-  dateRange.value = []
-  proxy.resetForm("queryRef")
-  handleQuery()
+const onSearch = ({ handleRefresh, updateState }) => {
+  updateState('pager.page', 1)
+  handleRefresh()
 }
 
-/** 新增按钮操作 */
-function handleAdd() {
-  deviceClazzDialogRef.value.open()
+// 事件处理
+const handleAdd = () => {
+  // 调用子组件的 open 方法，不传数据表示新增
+  deviceClazzDialogRef.value?.open()
+}
+
+const handleUpdate = (row) => {
+  // 调用子组件的 open 方法，传递 deviceClazzId 表示编辑
+  const deviceClazzId = row.deviceClazzId || ids.value[0]
+  deviceClazzDialogRef.value?.open(deviceClazzId)
+}
+
+const handleFormSuccess = () => {
+  // 刷新列表
+  gridListRef.value?.refresh()
 }
 
 /** 多选框选中数据 */
@@ -201,12 +215,6 @@ function handleSelectionChange(selection) {
   ids.value = selection.map(item => item.deviceClazzId)
   single.value = selection.length != 1
   multiple.value = !selection.length
-}
-
-/** 修改按钮操作 */
-function handleUpdate(row) {
-  const deviceClazzId = row.deviceClazzId || ids.value[0]
-  deviceClazzDialogRef.value.open(deviceClazzId)
 }
 
 /** 删除按钮操作 */
@@ -219,11 +227,15 @@ function handleDelete(row) {
     confirmMessage = '是否确认删除分类"' + row.name + '"？'
   } else {
     // 批量删除，显示选中的分类数量
-    const selectedCategories = categoryList.value.filter(item => ids.value.includes(item.deviceClazzId))
-    if (selectedCategories.length === 1) {
-      confirmMessage = '是否确认删除分类"' + selectedCategories[0].name + '"？'
+    if (ids.value.length === 1) {
+      // 从当前表格数据中找到对应的分类名称
+      const currentData = gridListRef.value?.grid?.list || []
+      const selectedCategory = currentData.find(item => item.deviceClazzId === ids.value[0])
+      confirmMessage = selectedCategory ? 
+        '是否确认删除分类"' + selectedCategory.name + '"？' : 
+        '是否确认删除选中的分类？'
     } else {
-      confirmMessage = '是否确认删除选中的 ' + selectedCategories.length + ' 个分类？'
+      confirmMessage = '是否确认删除选中的 ' + ids.value.length + ' 个分类？'
     }
   }
   
@@ -235,7 +247,7 @@ function handleDelete(row) {
       throw error
     }
   }).then(() => {
-    getList()
+    gridListRef.value?.refresh()
     proxy.$modal.msgSuccess("删除成功")
   })
 }
@@ -243,14 +255,14 @@ function handleDelete(row) {
 /** 导出按钮操作 */
 function handleExport() {
   try {
+    // 获取当前查询参数
+    const currentQuery = gridListRef.value?.query || {}
     proxy.download("protocol/deviceClazz/export", {
-      ...queryParams.value
+      ...currentQuery
     }, `device_clazz_${new Date().getTime()}.xlsx`)
   } catch (error) {
     console.warn('导出分类失败:', error)
     proxy.$modal.msgError("导出失败，接口暂不可用")
   }
 }
-
-getList()
 </script>

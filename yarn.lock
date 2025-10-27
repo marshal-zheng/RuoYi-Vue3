@@ -1065,6 +1065,13 @@
   resolved "https://registry.npmmirror.com/@webgpu/types/-/types-0.0.31.tgz#c05ec6e60024bf1836f31236ecd7677a969a2a2c"
   integrity sha512-cvvCMSZBT4VsRNtt0lI6XQqvOIIWw6+NRUtnPUMDVDgsI4pCZColz3qzF5QcP9wIYOHEc3jssIBse8UWONKhlQ==
 
+"@zxio/zxui@1.0.3":
+  version "1.0.3"
+  resolved "http://47.121.183.12:4873/@zxio/zxui/-/zxui-1.0.3.tgz#4c4d6fab8ae646fbdaeab7eb38ef2526837db26e"
+  integrity sha512-Af3vTtjq4IziLmfON4tNuTjP+tL0fh/e8rAcPTnyIdNZP4HkJ7Y9gmokWgVwfu9FARH6kH2HFlxAOi5W4N8qTw==
+  dependencies:
+    "@element-plus/icons-vue" "^2.3.1"
+
 abbrev@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/abbrev/-/abbrev-2.0.0.tgz#cf59829b8b4f03f89dda2771cb7f3653828c89bf"

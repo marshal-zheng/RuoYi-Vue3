@@ -1,5 +1,5 @@
 <template>
-  <ContentWrap>
+  <ZxContentWrap>
     <div class="device-detail">
       <!-- 页面标题 -->
       <div class="page-header">
@@ -81,7 +81,7 @@
         @protocol-click="handleProtocolClick"
       />
     </div>
-  </ContentWrap>
+  </ZxContentWrap>
 </template>
 
 <script setup name="DeviceDetail">

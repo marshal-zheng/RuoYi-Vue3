@@ -13,9 +13,14 @@
 
 /* fade-transform */
 .fade-transform--move,
-.fade-transform-leave-active,
 .fade-transform-enter-active {
-  transition: all .5s;
+  transition: opacity .25s ease, transform .25s ease;
+}
+
+/* 离场不做动画，并且脱离文档流，避免内容位移导致的空白闪烁 */
+.fade-transform-leave-active {
+  position: absolute;
+  transition: none;
 }
 
 .fade-transform-enter-from {
@@ -24,8 +29,8 @@
 }
 
 .fade-transform-leave-to {
-  opacity: 0;
-  transform: translateX(30px);
+  opacity: 1;
+  transform: none;
 }
 
 /* breadcrumb transition */
