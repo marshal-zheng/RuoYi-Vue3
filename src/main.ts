@@ -97,7 +97,7 @@ app.use(ElementPlus, {
   app.use(ZXUI, {
     size: 'default',
     namespace: 'zx',
-    zIndex: 3000
+    // zIndex: 3000
   })
 
 app.mount('#app')

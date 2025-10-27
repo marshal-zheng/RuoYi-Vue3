@@ -24,9 +24,11 @@
                 <el-input v-model="queryParams.phonenumber" placeholder="请输入手机号码" clearable style="width: 240px" @keyup.enter="handleQuery" />
               </el-form-item>
               <el-form-item label="状态" prop="status">
-                <el-select v-model="queryParams.status" placeholder="用户状态" clearable style="width: 240px">
-                  <el-option v-for="dict in sys_normal_disable" :key="dict.value" :label="dict.label" :value="dict.value" />
-                </el-select>
+                <UserStatusSelect 
+                  v-model="queryParams.status" 
+                  placeholder="用户状态" 
+                  :dict-data="sys_normal_disable"
+                />
               </el-form-item>
               <el-form-item label="创建时间" style="width: 308px">
                 <el-date-picker v-model="dateRange" value-format="YYYY-MM-DD" type="daterange" range-separator="-" start-placeholder="开始日期" end-placeholder="结束日期"></el-date-picker>
@@ -101,92 +103,8 @@
       </splitpanes>
     </el-row>
 
-    <!-- 添加或修改用户配置对话框 -->
-    <el-dialog :title="title" v-model="open" width="600px" append-to-body>
-      <el-form :model="form" :rules="rules" ref="userRef" label-width="80px">
-        <el-row>
-          <el-col :span="12">
-            <el-form-item label="用户昵称" prop="nickName">
-              <el-input v-model="form.nickName" placeholder="请输入用户昵称" maxlength="30" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="归属部门" prop="deptId">
-              <el-tree-select v-model="form.deptId" :data="enabledDeptOptions" :props="{ value: 'id', label: 'label', children: 'children' }" value-key="id" placeholder="请选择归属部门" clearable check-strictly />
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row>
-          <el-col :span="12">
-            <el-form-item label="手机号码" prop="phonenumber">
-              <el-input v-model="form.phonenumber" placeholder="请输入手机号码" maxlength="11" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="邮箱" prop="email">
-              <el-input v-model="form.email" placeholder="请输入邮箱" maxlength="50" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row>
-          <el-col :span="12">
-            <el-form-item v-if="form.userId == undefined" label="用户名称" prop="userName">
-              <el-input v-model="form.userName" placeholder="请输入用户名称" maxlength="30" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item v-if="form.userId == undefined" label="用户密码" prop="password">
-              <el-input v-model="form.password" placeholder="请输入用户密码" type="password" maxlength="20" show-password />
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row>
-          <el-col :span="12">
-            <el-form-item label="用户性别">
-              <el-select v-model="form.sex" placeholder="请选择">
-                <el-option v-for="dict in sys_user_sex" :key="dict.value" :label="dict.label" :value="dict.value"></el-option>
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="状态">
-              <el-radio-group v-model="form.status">
-                <el-radio v-for="dict in sys_normal_disable" :key="dict.value" :value="dict.value">{{ dict.label }}</el-radio>
-              </el-radio-group>
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row>
-          <el-col :span="12">
-            <el-form-item label="岗位">
-              <el-select v-model="form.postIds" multiple placeholder="请选择">
-                <el-option v-for="item in postOptions" :key="item.postId" :label="item.postName" :value="item.postId" :disabled="item.status == 1"></el-option>
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="角色">
-              <el-select v-model="form.roleIds" multiple placeholder="请选择">
-                <el-option v-for="item in roleOptions" :key="item.roleId" :label="item.roleName" :value="item.roleId" :disabled="item.status == 1"></el-option>
-              </el-select>
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row>
-          <el-col :span="24">
-            <el-form-item label="备注">
-              <el-input v-model="form.remark" type="textarea" placeholder="请输入内容"></el-input>
-            </el-form-item>
-          </el-col>
-        </el-row>
-      </el-form>
-      <template #footer>
-        <div class="dialog-footer">
-          <el-button type="primary" @click="submitForm">确 定</el-button>
-          <el-button @click="cancel">取 消</el-button>
-        </div>
-      </template>
-    </el-dialog>
+    <!-- 用户弹框组件 -->
+    <UserDialog ref="userDialogRef" @success="getList" />
 
     <!-- 用户导入对话框 -->
     <el-dialog :title="upload.title" v-model="upload.open" width="400px" append-to-body>
@@ -217,9 +135,10 @@
 import { getToken } from "@/utils/auth"
 import ContentWrap from "@/components/ContentWrap/src/ContentWrap.vue"
 import useAppStore from '@/store/modules/app'
-import { changeUserStatus, listUser, resetUserPwd, delUser, getUser, updateUser, addUser, deptTreeSelect } from "@/api/system/user"
+import { changeUserStatus, listUser, resetUserPwd, delUser, deptTreeSelect } from "@/api/system/user"
 import { Splitpanes, Pane } from "splitpanes"
 import "splitpanes/dist/splitpanes.css"
+import { UserDialog, UserStatusSelect } from "./components"
 
 const router = useRouter()
 const appStore = useAppStore()
@@ -227,21 +146,18 @@ const { proxy } = getCurrentInstance()
 const { sys_normal_disable, sys_user_sex } = proxy.useDict("sys_normal_disable", "sys_user_sex")
 
 const userList = ref([])
-const open = ref(false)
 const loading = ref(true)
 const showSearch = ref(true)
 const ids = ref([])
 const single = ref(true)
 const multiple = ref(true)
 const total = ref(0)
-const title = ref("")
 const dateRange = ref([])
 const deptName = ref("")
 const deptOptions = ref(undefined)
-const enabledDeptOptions = ref(undefined)
-const initPassword = ref(undefined)
-const postOptions = ref([])
-const roleOptions = ref([])
+
+// UserDialog 组件引用
+const userDialogRef = ref()
 /*** 用户导入参数 */
 const upload = reactive({
   // 是否显示弹出层（用户导入）
@@ -269,7 +185,6 @@ const columns = ref({
 })
 
 const data = reactive({
-  form: {},
   queryParams: {
     pageNum: 1,
     pageSize: 10,
@@ -277,17 +192,10 @@ const data = reactive({
     phonenumber: undefined,
     status: undefined,
     deptId: undefined
-  },
-  rules: {
-    userName: [{ required: true, message: "用户名称不能为空", trigger: "blur" }, { min: 2, max: 20, message: "用户名称长度必须介于 2 和 20 之间", trigger: "blur" }],
-    nickName: [{ required: true, message: "用户昵称不能为空", trigger: "blur" }],
-    password: [{ required: true, message: "用户密码不能为空", trigger: "blur" }, { min: 5, max: 20, message: "用户密码长度必须介于 5 和 20 之间", trigger: "blur" }, { pattern: /^[^<>"'|\\]+$/, message: "不能包含非法字符：< > \" ' \\\ |", trigger: "blur" }],
-    email: [{ type: "email", message: "请输入正确的邮箱地址", trigger: ["blur", "change"] }],
-    phonenumber: [{ pattern: /^1[3|4|5|6|7|8|9][0-9]\d{8}$/, message: "请输入正确的手机号码", trigger: "blur" }]
   }
 })
 
-const { queryParams, form, rules } = toRefs(data)
+const { queryParams } = toRefs(data)
 
 /** 通过条件过滤节点  */
 const filterNode = (value, data) => {
@@ -314,20 +222,6 @@ function getList() {
 function getDeptTree() {
   deptTreeSelect().then(response => {
     deptOptions.value = response.data
-    enabledDeptOptions.value = filterDisabledDept(JSON.parse(JSON.stringify(response.data)))
-  })
-}
-
-/** 过滤禁用的部门 */
-function filterDisabledDept(deptList) {
-  return deptList.filter(dept => {
-    if (dept.disabled) {
-      return false
-    }
-    if (dept.children && dept.children.length) {
-      dept.children = filterDisabledDept(dept.children)
-    }
-    return true
   })
 }
 
@@ -476,85 +370,19 @@ function submitFileForm() {
   proxy.$refs["uploadRef"].submit()
 }
 
-/** 重置操作表单 */
-function reset() {
-  form.value = {
-    userId: undefined,
-    deptId: undefined,
-    userName: undefined,
-    nickName: undefined,
-    password: undefined,
-    phonenumber: undefined,
-    email: undefined,
-    sex: undefined,
-    status: "0",
-    remark: undefined,
-    postIds: [],
-    roleIds: []
-  }
-  proxy.resetForm("userRef")
-}
-
-/** 取消按钮 */
-function cancel() {
-  open.value = false
-  reset()
-}
-
 /** 新增按钮操作 */
 function handleAdd() {
-  reset()
-  getUser().then(response => {
-    postOptions.value = response.posts
-    roleOptions.value = response.roles
-    open.value = true
-    title.value = "添加用户"
-    form.value.password = initPassword.value
-  })
+  userDialogRef.value?.open()
 }
 
 /** 修改按钮操作 */
 function handleUpdate(row) {
-  reset()
   const userId = row.userId || ids.value
-  getUser(userId).then(response => {
-    form.value = response.data
-    postOptions.value = response.posts
-    roleOptions.value = response.roles
-    form.value.postIds = response.postIds
-    form.value.roleIds = response.roleIds
-    open.value = true
-    title.value = "修改用户"
-    form.password = ""
-  })
-}
-
-/** 提交按钮 */
-function submitForm() {
-  proxy.$refs["userRef"].validate(valid => {
-    if (valid) {
-      if (form.value.userId != undefined) {
-        updateUser(form.value).then(response => {
-          proxy.$modal.msgSuccess("修改成功")
-          open.value = false
-          getList()
-        })
-      } else {
-        addUser(form.value).then(response => {
-          proxy.$modal.msgSuccess("新增成功")
-          open.value = false
-          getList()
-        })
-      }
-    }
-  })
+  userDialogRef.value?.open(userId)
 }
 
 onMounted(() => {
   getDeptTree()
   getList()
-  proxy.getConfigKey("sys.user.initPassword").then(response => {
-    initPassword.value = response.msg
-  })
 })
 </script>
