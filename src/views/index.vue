@@ -1,12 +1,12 @@
 <template>
-<ContentWrap class="home">
+<!-- <ContentWrap class="home">
   <XflowDAG
     :operators="operators"
     :operators-loading="loading"
     :layout="layoutMode"
     :dnd-config="dndConfig"
   />
-  </ContentWrap>
+  </ContentWrap> -->
 </template>
 
 <script setup name="Index">

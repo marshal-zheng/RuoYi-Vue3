@@ -55,6 +55,7 @@ function toggleSideBar() {
 }
 
 function handleCommand(command) {
+  console.log('handleCommand called with:', command)
   switch (command) {
     case "setLayout":
       setLayout()
@@ -68,15 +69,23 @@ function handleCommand(command) {
 }
 
 function logout() {
+  console.log('logout function called')
   ElMessageBox.confirm('确定注销并退出系统吗？', '提示', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
-    type: 'warning'
+    type: 'warning',
+    zIndex: 9999
   }).then(() => {
+    console.log('User confirmed logout')
     userStore.logOut().then(() => {
+      console.log('logOut successful, redirecting...')
       location.href = '/index'
+    }).catch(error => {
+      console.error('logOut failed:', error)
     })
-  }).catch(() => { })
+  }).catch(() => { 
+    console.log('User cancelled logout')
+  })
 }
 
 const emits = defineEmits(['setLayout'])

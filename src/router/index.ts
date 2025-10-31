@@ -169,6 +169,12 @@ export const dynamicRoutes = [
         component: () => import('@/views/project/detail'),
         name: 'ProjectDetail',
         meta: { title: '项目详情', activeMenu: '/project' }
+      },
+      {
+        path: 'info/:projectId',
+        component: () => import('@/views/project/info'),
+        name: 'ProjectInfo',
+        meta: { title: '项目详情', activeMenu: '/project' }
       }
     ]
   },

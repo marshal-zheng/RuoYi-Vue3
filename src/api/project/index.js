@@ -12,7 +12,7 @@ export function listProject(query) {
 // 查询项目详细
 export function getProject(projectId) {
   return request({
-    url: '/project/' + projectId,
+    url: '/project/project/' + projectId,
     method: 'get'
   })
 }
@@ -20,7 +20,7 @@ export function getProject(projectId) {
 // 新增项目
 export function addProject(data) {
   return request({
-    url: '/project',
+    url: '/project/project',
     method: 'post',
     data: data
   })
@@ -29,7 +29,7 @@ export function addProject(data) {
 // 修改项目
 export function updateProject(data) {
   return request({
-    url: '/project',
+    url: '/project/project',
     method: 'put',
     data: data
   })
@@ -38,7 +38,7 @@ export function updateProject(data) {
 // 删除项目
 export function delProject(projectId) {
   return request({
-    url: '/project/' + projectId,
+    url: '/project/project/' + projectId,
     method: 'delete'
   })
 }
@@ -46,7 +46,7 @@ export function delProject(projectId) {
 // 导出项目数据
 export function exportProject(query) {
   return request({
-    url: '/project/export',
+    url: '/project/project/export',
     method: 'post',
     data: query
   })
@@ -55,7 +55,7 @@ export function exportProject(query) {
 // 查询项目配置列表
 export function listProjectConfig(query) {
   return request({
-    url: '/project/config/list',
+    url: '/project/project/config/list',
     method: 'get',
     params: query
   })
@@ -64,7 +64,7 @@ export function listProjectConfig(query) {
 // 查询项目配置详细
 export function getProjectConfig(configId) {
   return request({
-    url: '/project/config/' + configId,
+    url: '/project/project/config/' + configId,
     method: 'get'
   })
 }
@@ -72,7 +72,7 @@ export function getProjectConfig(configId) {
 // 新增项目配置
 export function addProjectConfig(data) {
   return request({
-    url: '/project/config',
+    url: '/project/project/config',
     method: 'post',
     data: data
   })
@@ -81,7 +81,7 @@ export function addProjectConfig(data) {
 // 修改项目配置
 export function updateProjectConfig(data) {
   return request({
-    url: '/project/config',
+    url: '/project/project/config',
     method: 'put',
     data: data
   })
@@ -90,7 +90,7 @@ export function updateProjectConfig(data) {
 // 删除项目配置
 export function delProjectConfig(configId) {
   return request({
-    url: '/project/config/' + configId,
+    url: '/project/project/config/' + configId,
     method: 'delete'
   })
 }
@@ -98,7 +98,7 @@ export function delProjectConfig(configId) {
 // 导出项目配置数据
 export function exportProjectConfig(query) {
   return request({
-    url: '/project/config/export',
+    url: '/project/project/config/export',
     method: 'post',
     data: query
   })
