@@ -257,20 +257,20 @@ async function getUsers(userId) {
 /** 提交按钮 */
 async function submitForm() {
   const userRef = proxy.$refs.userRef
-  try {
-    await userRef.validate()
-    if (form.value.userId !== undefined) {
-      await updateUser(form.value)
-      proxy.$modal.msgSuccess('修改成功')
-    } else {
-      await addUser(form.value)
-      proxy.$modal.msgSuccess('新增成功')
-    }
-    dialogVisible.value = false
-    emit('success')
-  } catch (error) {
-    console.error(error)
+  if (!userRef) return
+  
+  const valid = await userRef.validate().catch(() => false)
+  if (!valid) return
+  
+  if (form.value.userId !== undefined) {
+    await updateUser(form.value)
+    proxy.$modal.msgSuccess('修改成功')
+  } else {
+    await addUser(form.value)
+    proxy.$modal.msgSuccess('新增成功')
   }
+  dialogVisible.value = false
+  emit('success')
 }
 
 /** 取消按钮 */
@@ -304,11 +304,9 @@ async function getOptions() {
   initPassword.value = config.msg
   form.value.password = initPassword.value
   
-  // 获取角色列表
   const roleResponse = await listRole({})
   roleOptions.value = roleResponse.rows
   
-  // 获取岗位列表
   const postResponse = await listPost({})
   postOptions.value = postResponse.rows
 }
@@ -316,25 +314,25 @@ async function getOptions() {
 /** 新增按钮操作 */
 async function handleAdd() {
   reset()
-  await getOptions()
   dialogVisible.value = true
   title.value = '添加用户'
+  await getOptions()
 }
 
 /** 修改按钮操作 */
 async function handleUpdate(userId) {
   reset()
-  await Promise.all([getOptions(), getUsers(userId)])
   dialogVisible.value = true
   title.value = '修改用户'
+  await Promise.all([getOptions(), getUsers(userId)])
 }
 
 /** 打开对话框 - 支持新增和修改 */
-async function open(userId) {
+function open(userId) {
   if (userId) {
-    await handleUpdate(userId)
+    handleUpdate(userId)
   } else {
-    await handleAdd()
+    handleAdd()
   }
 }
 
