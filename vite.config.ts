@@ -21,12 +21,42 @@ export default defineConfig(({ mode, command }) => {
     ],
     resolve: {
       // https://cn.vitejs.dev/config/#resolve-alias
-      alias: {
+      alias: [
         // 设置路径
-        '~': path.resolve(__dirname, './'),
+        { find: '~', replacement: path.resolve(__dirname, './') },
         // 设置别名
-        '@': path.resolve(__dirname, './src')
-      },
+        { find: '@', replacement: path.resolve(__dirname, './src') },
+        // {
+        //   find: /^@zxio\/zxui\/theme-chalk/,
+        //   replacement: '/Users/hqz/Downloads/element-plus/packages/theme-chalk'
+        // },
+        // // 直连 ZXUI 入口（全量安装）- 指向目录以支持子路径导入
+        // {
+        //   find: '@zxio/zxui',
+        //   replacement: '/Users/hqz/Downloads/element-plus/packages/zxui'
+        // },
+        // // 直连各子包（按需引用）
+        // {
+        //   find: '@zxui/components',
+        //   replacement: '/Users/hqz/Downloads/element-plus/packages/components'
+        // },
+        // {
+        //   find: '@zxui/utils',
+        //   replacement: '/Users/hqz/Downloads/element-plus/packages/utils'
+        // },
+        // {
+        //   find: '@zxui/hooks',
+        //   replacement: '/Users/hqz/Downloads/element-plus/packages/hooks'
+        // },
+        // {
+        //   find: '@zxui/constants',
+        //   replacement: '/Users/hqz/Downloads/element-plus/packages/constants'
+        // },
+        // {
+        //   find: '@zxio/theme-chalk',
+        //   replacement: '/Users/hqz/Downloads/element-plus/packages/theme-chalk'
+        // }
+      ],
       // https://cn.vitejs.dev/config/#resolve-extensions
       extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.vue']
     },

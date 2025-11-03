@@ -738,10 +738,10 @@
   resolved "https://registry.npmmirror.com/@webgpu/types/-/types-0.0.31.tgz"
   integrity sha512-cvvCMSZBT4VsRNtt0lI6XQqvOIIWw6+NRUtnPUMDVDgsI4pCZColz3qzF5QcP9wIYOHEc3jssIBse8UWONKhlQ==
 
-"@zxio/zxui@^1.0.5":
-  version "1.0.5"
-  resolved "http://47.121.183.12:4873/@zxio/zxui/-/zxui-1.0.5.tgz"
-  integrity sha512-SPbgfaegum/BSayoK8+8voz/VJRlW0tiS4rOJjRxHQTBKVmg/0QTq4VN1NeFWhql7Qa8bWjVM6+4Ilm13H0JVQ==
+"@zxio/zxui@^1.0.6":
+  version "1.0.6"
+  resolved "http://47.121.183.12:4873/@zxio/zxui/-/zxui-1.0.6.tgz"
+  integrity sha512-hh9OZ4wCoAhJfI5aNr+zcEaHX7xuAJfODYDY9wH4SWpHgRaWetQ9/oTZB+G9Va8vNG/TXxI9ZOyJYi4vbydiKQ==
   dependencies:
     "@element-plus/icons-vue" "^2.3.1"
 
