@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ElCard, ElDescriptions, ElDescriptionsItem, ElSkeleton, ElTooltip } from 'element-plus'
 import { propTypes } from '@/utils/propTypes'
-import { computed, useSlots, ref, nextTick, type VNode } from 'vue'
+import { computed, useSlots, type VNode } from 'vue'
 
 const slots = useSlots()
 
@@ -50,11 +50,6 @@ const hasHeaderSlot = computed(() => !!slots.header)
 // 判断是否有数据
 const hasData = computed(() => props.data && props.data.length > 0)
 
-// 检查文本是否需要 tooltip（是否溢出）
-const checkOverflow = (el: HTMLElement | null): boolean => {
-  if (!el) return false
-  return el.scrollWidth > el.clientWidth
-}
 </script>
 
 <template>
