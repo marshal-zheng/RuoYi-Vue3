@@ -171,7 +171,10 @@ function getCode() {
   getCodeImg().then(res => {
     captchaEnabled.value = res.captchaEnabled === undefined ? true : res.captchaEnabled
     if (captchaEnabled.value) {
-      codeUrl.value = "data:image/gif;base64," + res.img
+      const imgData = res.img || ""
+      codeUrl.value = imgData.startsWith("data:")
+        ? imgData
+        : `data:image/gif;base64,${imgData}`
       loginForm.value.uuid = res.uuid
     }
   })

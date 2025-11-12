@@ -1,4 +1,4 @@
-import { defineConfig, loadEnv } from 'vite'
+import { defineConfig, loadEnv, type ProxyOptions } from 'vite'
 import path from 'path'
 import tailwindcss from '@tailwindcss/vite'
 import createVitePlugins from './vite/plugins'
@@ -10,6 +10,19 @@ const baseUrl = 'http://47.113.195.229:8089' // 后端接口（本地开发，�
 export default defineConfig(({ mode, command }) => {
   const env = loadEnv(mode, process.cwd())
   const { VITE_APP_ENV } = env
+  
+  const proxyConfig: Record<string, string | ProxyOptions> = {
+    '/dev-api': {
+      target: baseUrl,
+      changeOrigin: true,
+      rewrite: (p: string) => p.replace(/^\/dev-api/, '')
+    },
+    '^/v3/api-docs/(.*)': {
+      target: baseUrl,
+      changeOrigin: true,
+    }
+  }
+  
   return {
     // 部署生产环境和开发环境下的URL。
     // 默认情况下，vite 会假设你的应用是被部署在一个域名的根路径上
@@ -80,29 +93,9 @@ export default defineConfig(({ mode, command }) => {
       port: 80,
       host: true,
       open: true,
-      // proxy: {
-      //   // https://cn.vitejs.dev/config/#server-proxy
-      //   '/dev-api': {
-      //     target: baseUrl,
-      //     changeOrigin: true,
-      //     // 将 /dev-api 重写为 /prod-api（演示环境使用）
-      //     // 请求 /dev-api/xxx 会转发为 https://vue.ruoyi.vip/prod-api/xxx
-      //     rewrite: (p) => p.replace(/^\/dev-api/, '/dev-api')
-      //   }
-      // }
-      proxy: {
-        // https://cn.vitejs.dev/config/#server-proxy
-        '/dev-api': {
-          target: 'http://47.113.195.229:8089',
-          changeOrigin: true,
-          rewrite: (p) => p.replace(/^\/dev-api/, '')
-        },
-         // springdoc proxy
-         '^/v3/api-docs/(.*)': {
-          target: baseUrl,
-          changeOrigin: true,
-        }
-      }
+      // 当启用 Mock 时，proxy 由自定义中间件处理（支持 404 降级）
+      // 当禁用 Mock 时，使用标准 proxy
+      proxy: proxyConfig
     },
     //fix:error:stdin>:7356:1: warning: "@charset" must be the first rule in the file
     css: {

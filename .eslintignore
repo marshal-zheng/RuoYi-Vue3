@@ -1,0 +1,5 @@
+src/mocks/**
+mock/**
+public/mockServiceWorker.js
+
+

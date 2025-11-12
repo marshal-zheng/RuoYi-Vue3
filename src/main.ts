@@ -100,4 +100,15 @@ app.use(ElementPlus, {
     // zIndex: 3000
   })
 
-app.mount('#app')
+async function bootstrap() {
+  const mockMode = import.meta.env.VITE_ENABLE_MOCK ?? 'off'
+  if (mockMode !== 'off') {
+    // @ts-ignore 避免构建时类型检查解析 src/mocks/**
+    const { setupBrowserMocks } = await import('./mocks')
+    await setupBrowserMocks()
+  }
+
+  app.mount('#app')
+}
+
+bootstrap()

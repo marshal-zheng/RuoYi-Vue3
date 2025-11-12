@@ -1,4 +1,32 @@
 <template>
+  <div class="home-container">
+    <el-card class="mock-test-card">
+      <template #header>
+        <div class="card-header">
+          <span>Mock 服务测试</span>
+        </div>
+      </template>
+      <div class="test-content">
+        <el-button type="primary" @click="testMockService">测试 Mock 接口</el-button>
+        <div v-if="mockResult" class="result-box">
+          <el-alert
+            :title="mockResult.msg"
+            :type="mockResult.code === 200 ? 'success' : 'error'"
+            :closable="false"
+            show-icon
+          >
+            <template #default>
+              <div class="result-detail">
+                <p><strong>消息：</strong>{{ mockResult.data?.message }}</p>
+                <p><strong>时间：</strong>{{ mockResult.data?.timestamp }}</p>
+                <p><strong>提示：</strong>{{ mockResult.data?.tips }}</p>
+              </div>
+            </template>
+          </el-alert>
+        </div>
+      </div>
+    </el-card>
+  </div>
 <!-- <ContentWrap class="home">
   <XflowDAG
     :operators="operators"
@@ -12,8 +40,20 @@
 <script setup name="Index">
 import ContentWrap from "@/components/ContentWrap/src/ContentWrap.vue"
 import XflowDAG from "@/components/business/Dag/index.vue"
+import request from '@/utils/request'
+import { ElMessage } from 'element-plus'
 
 const version = ref('3.9.0')
+const mockResult = ref(null)
+
+// 测试 Mock 服务
+const testMockService = async () => {
+  mockResult.value = await request({
+    url: '/test/mock',
+    method: 'get'
+  })
+  ElMessage.success('Mock 接口调用成功！')
+}
 
 // DAG 组件配置 - 飞控设备库（带分类）
 const operators = ref([
@@ -62,6 +102,36 @@ function goTarget(url) {
 </script>
 
 <style scoped lang="scss">
+.home-container {
+  padding: 20px;
+}
+
+.mock-test-card {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.card-header {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.test-content {
+  text-align: center;
+}
+
+.result-box {
+  margin-top: 20px;
+  text-align: left;
+}
+
+.result-detail {
+  p {
+    margin: 8px 0;
+    line-height: 1.6;
+  }
+}
+
 .home {
   height: calc(100vh - 84px);
   display: flex;

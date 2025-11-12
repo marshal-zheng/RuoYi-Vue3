@@ -13,6 +13,7 @@ declare global {
     readonly VITE_APP_BASE_API: string
     readonly VITE_APP_CAPTCHA_ENABLED: string
     readonly VITE_APP_RSA_PUBLIC_KEY: string
+    readonly VITE_ENABLE_MOCK?: 'off' | 'fallback' | 'pure'
   }
 
   interface ImportMeta {
